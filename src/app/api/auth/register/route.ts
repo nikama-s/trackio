@@ -1,18 +1,13 @@
-import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-
-const registerSchema = z
-  .object({
-    email: z.string().email(),
-    password: z.string().min(8),
-    confirmPassword: z.string().min(8)
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"]
-  });
+import { registerSchema } from "@/lib/validators/auth";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  saveRefreshToken
+} from "@/lib/auth/tokens";
+import { setAuthCookies } from "@/lib/auth/cookies";
 
 export async function POST(request: Request) {
   try {
@@ -28,9 +23,7 @@ export async function POST(request: Request) {
 
     const { email, password } = validation.data;
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    });
+    const existingUser = await prisma.user.findUnique({ where: { email } });
 
     if (existingUser) {
       return NextResponse.json(
@@ -48,10 +41,16 @@ export async function POST(request: Request) {
       }
     });
 
-    return NextResponse.json(
+    const accessToken = generateAccessToken(user.id, user.email);
+    const refreshToken = generateRefreshToken(user.id);
+    await saveRefreshToken(user.id, refreshToken);
+
+    const response = NextResponse.json(
       { user: { email: user.email, id: user.id } },
       { status: 201 }
     );
+
+    return setAuthCookies(response, accessToken, refreshToken);
   } catch (error) {
     console.error("Registration error:", error);
     return NextResponse.json(

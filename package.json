@@ -5,11 +5,10 @@
   "scripts": {
     "reset:prisma": "rimraf node_modules\\.prisma && prisma generate",
     "test:db": "prisma generate && ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" prisma/test-connection.ts",
-    "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
+    "postinstall": "prisma generate",
     "dev": "next dev",
-    "prebuild": "prisma generate",
-    "build": "prisma generate && next build",
+    "build": "npx prisma generate && next build",
     "start": "next start",
     "lint": "next lint"
   },
