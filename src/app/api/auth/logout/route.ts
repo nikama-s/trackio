@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import prisma from "@/lib/prisma";
+import { deleteRefreshToken } from "@/lib/auth/tokens";
 
 export async function POST() {
   try {
@@ -16,11 +16,9 @@ export async function POST() {
     response.cookies.delete("refreshToken");
 
     if (refreshToken) {
-      await prisma.refreshToken
-        .deleteMany({
-          where: { token: refreshToken }
-        })
-        .catch((error) => console.error("Token deletion error:", error));
+      await deleteRefreshToken(refreshToken).catch((error) =>
+        console.error("Token deletion error:", error)
+      );
     }
 
     return response;

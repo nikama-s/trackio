@@ -20,15 +20,19 @@ export const generateRefreshToken = (userId: string) => {
   return jwt.sign({ userId }, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRY });
 };
 
-export const deleteUserRefreshTokens = async (userId: string) => {
+export const deleteAllUserRefreshTokens = async (userId: string) => {
   return prisma.refreshToken.deleteMany({
     where: { userId }
   });
 };
 
-export const saveRefreshToken = async (userId: string, token: string) => {
-  await deleteUserRefreshTokens(userId);
+export const deleteRefreshToken = async (token: string) => {
+  return prisma.refreshToken.deleteMany({
+    where: { token }
+  });
+};
 
+export const saveRefreshToken = async (userId: string, token: string) => {
   return prisma.refreshToken.create({
     data: {
       token,
