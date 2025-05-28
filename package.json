@@ -9,6 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mantine/core": "^8.0.2",
+    "@mantine/form": "^8.0.2",
+    "@mantine/hooks": "^8.0.2",
+    "@mantine/styles": "^6.0.22",
     "@prisma/client": "^6.8.2",
     "bcryptjs": "^3.0.2",
     "jsonwebtoken": "^9.0.2",
