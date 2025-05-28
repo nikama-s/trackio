@@ -14,17 +14,20 @@ import {
 import { useForm } from "@mantine/form";
 import Link from "next/link";
 
-export default function LoginForm() {
+export default function SignUpForm() {
   const form = useForm({
     mode: "uncontrolled",
     validateInputOnBlur: true,
     initialValues: {
       email: "",
       password: "",
+      confirmedPassword: "",
     },
     validate: {
       email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
       password: (value) => (value.length > 7 ? null : "Password too short"),
+      confirmedPassword: (value, values) =>
+        value == values.password ? null : "Passwords do not match",
     },
   });
 
@@ -38,7 +41,7 @@ export default function LoginForm() {
         <Box
           style={{
             width: "25vw",
-            height: "60vh",
+            height: "65vh",
             backgroundColor: "lightblue",
           }}
         >
@@ -51,7 +54,7 @@ export default function LoginForm() {
               wrap="wrap"
             >
               <Title order={1} mt={"5vh"} mb={"5vh"}>
-                Login
+                Sign up
               </Title>
 
               <TextInput
@@ -68,16 +71,23 @@ export default function LoginForm() {
                 {...form.getInputProps("password")}
               />
 
+              <PasswordInput
+                w={"80%"}
+                label="Confirm password"
+                placeholder="Confirm your password"
+                {...form.getInputProps("confirmedPassword")}
+              />
+
               <Button w={"80%"} type="submit" mt="4vh" radius={"xl"}>
-                LOGIN
+                SIGN UP
               </Button>
 
               <Text mt="3vh" size="sm">
-                Or Sign Up Using
+                Or Login Using
               </Text>
-              <Link href="/auth/register">
+              <Link href="/auth/login">
                 <Text c="black" fw={500} style={{ cursor: "pointer" }}>
-                  SIGN UP
+                  LOGIN
                 </Text>
               </Link>
             </Flex>
