@@ -13,6 +13,7 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function SignUpForm() {
   const form = useForm({
@@ -31,6 +32,19 @@ export default function SignUpForm() {
     },
   });
 
+  const router = useRouter();
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const validation = form.validate();
+    if (validation.hasErrors) {
+      return;
+    }
+
+    router.push("/dashboard");
+  };
+
   return (
     <MantineProvider
       theme={{
@@ -43,9 +57,10 @@ export default function SignUpForm() {
             width: "25vw",
             height: "65vh",
             backgroundColor: "lightblue",
+            borderRadius: "18px",
           }}
         >
-          <form onSubmit={form.onSubmit((values) => console.log(values))}>
+          <form onSubmit={handleSubmit}>
             <Flex
               gap="sm"
               justify="center"

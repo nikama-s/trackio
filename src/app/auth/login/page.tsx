@@ -13,7 +13,7 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
 export default function LoginForm() {
   const form = useForm({
     mode: "uncontrolled",
@@ -27,6 +27,19 @@ export default function LoginForm() {
       password: (value) => (value.length > 7 ? null : "Password too short"),
     },
   });
+
+  const router = useRouter();
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const validation = form.validate();
+    if (validation.hasErrors) {
+      return;
+    }
+
+    router.push("/dashboard");
+  };
 
   return (
     <MantineProvider
@@ -42,7 +55,7 @@ export default function LoginForm() {
             backgroundColor: "lightblue",
           }}
         >
-          <form onSubmit={form.onSubmit((values) => console.log(values))}>
+          <form onSubmit={handleSubmit}>
             <Flex
               gap="sm"
               justify="center"
