@@ -5,11 +5,10 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "module": "Node16",
-    "moduleResolution": "node16",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -19,6 +18,7 @@
       "@/*": ["./src/*"],
       "@prisma/client": ["./src/generated/prisma"]
     },
+    "typeRoots": ["./node_modules/@types", "./src/types"],
     "plugins": [
       {
         "name": "next"
@@ -26,11 +26,11 @@
     ]
   },
   "include": [
+    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "next-env.d.ts",
-    "next.config.js",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "src/types/**/*.d.ts"
   ],
-  "exclude": ["node_modules", ".next/**/*"]
+  "exclude": ["node_modules"]
 }
