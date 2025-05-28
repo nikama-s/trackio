@@ -90,9 +90,3 @@ export const verifyRefreshToken = async (token: string) => {
 
   return payload;
 };
-
-export const revokeRefreshToken = async (token: string) => {
-  return prisma.refreshToken.deleteMany({
-    where: { token }
-  });
-};
