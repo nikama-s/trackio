@@ -19,7 +19,7 @@ api.interceptors.response.use(
     };
 
     if (error.response?.status === 401 && !originalRequest._retry) {
-      if (originalRequest.url?.startsWith("/auth")) {
+      if (originalRequest.url?.includes("/auth/")) {
         return Promise.reject(error);
       }
       originalRequest._retry = true;
