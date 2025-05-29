@@ -11,9 +11,13 @@ import {
 } from "@mantine/core";
 import { useForm, isEmail, hasLength } from "@mantine/form";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useLogin } from "@/hooks/useAuth";
+import { useState } from "react";
 
 export default function LoginForm() {
+  const login = useLogin();
+  const [generalError, setGeneralError] = useState<string | null>(null);
+
   const form = useForm({
     mode: "uncontrolled",
     validateInputOnBlur: true,
@@ -27,10 +31,23 @@ export default function LoginForm() {
     },
   });
 
-  const router = useRouter();
-
-  const handleSubmit = () => {
-    router.push("/");
+  const handleSubmit = async (values: typeof form.values) => {
+    setGeneralError(null);
+    login.mutate(values, {
+      onError: (error) => {
+        if (error?.errors) {
+          Object.entries(error.errors).forEach(([field, messages]) => {
+            form.setFieldError(
+              field as keyof typeof values,
+              messages.join(" ")
+            );
+          });
+        }
+        if (error?.error) {
+          setGeneralError(error.error);
+        }
+      },
+    });
   };
 
   return (
@@ -41,7 +58,7 @@ export default function LoginForm() {
           maxWidth: 400,
           backgroundColor: "lightblue",
           padding: "2rem",
-          borderRadius: "10px",
+          borderRadius: "18px",
           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
         }}
       >
@@ -70,6 +87,11 @@ export default function LoginForm() {
               placeholder="Type your password"
               {...form.getInputProps("password")}
             />
+            {generalError && (
+              <Text c="red" size="sm" mt="xs">
+                {generalError}
+              </Text>
+            )}
 
             <Button w="100%" type="submit" mt="md" radius="xl">
               LOGIN

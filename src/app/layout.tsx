@@ -1,6 +1,7 @@
 import "@mantine/core/styles.css";
 import "./globals.css";
 import { MantineProvider } from "@mantine/core";
+import { Providers } from "@/Providers";
 export const metadata = {
   title: "Trackio",
   description: "App to track your tasks",
@@ -14,13 +15,15 @@ export default function RootLayout({
   return (
     <html lang="en" data-mantine-color-scheme="light">
       <body>
-        <MantineProvider
-          theme={{
-            fontFamily: '"Comic Sans MS", cursive, sans-serif',
-          }}
-        >
-          {children}
-        </MantineProvider>
+        <Providers>
+          <MantineProvider
+            theme={{
+              fontFamily: '"Comic Sans MS", cursive, sans-serif',
+            }}
+          >
+            {children}
+          </MantineProvider>
+        </Providers>
       </body>
     </html>
   );

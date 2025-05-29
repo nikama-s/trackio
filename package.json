@@ -26,6 +26,8 @@
     "@mantine/styles": "^6.0.22",
     "@prisma/client": "^6.8.2",
     "@tailwindcss/vite": "^4.1.8",
+    "@tanstack/react-query": "^5.79.0",
+    "axios": "^1.9.0",
     "bcryptjs": "^3.0.2",
     "cookie": "^1.0.2",
     "jsonwebtoken": "^9.0.2",
@@ -35,7 +37,9 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.6.1",
-    "zod": "^3.25.29"
+    "tanstack": "^1.0.0",
+    "zod": "^3.25.29",
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
