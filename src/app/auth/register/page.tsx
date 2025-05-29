@@ -1,8 +1,6 @@
 "use client";
-import "@mantine/core/styles.css";
 import {
   Button,
-  MantineProvider,
   TextInput,
   Title,
   PasswordInput,
@@ -11,7 +9,7 @@ import {
   Box,
   Text,
 } from "@mantine/core";
-import { useForm } from "@mantine/form";
+import { useForm, matchesField, isEmail, hasLength } from "@mantine/form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -25,92 +23,78 @@ export default function SignUpForm() {
       confirmedPassword: "",
     },
     validate: {
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
-      password: (value) => (value.length > 7 ? null : "Password too short"),
-      confirmedPassword: (value, values) =>
-        value === values.password ? null : "Passwords do not match",
+      email: isEmail("Invalid email"),
+      password: hasLength({ min: 8 }, "Password too short"),
+      confirmedPassword: matchesField("password", "Passwords are not the same"),
     },
   });
 
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const validation = form.validate();
-    if (validation.hasErrors) {
-      return;
-    }
-
-    router.push("/dashboard");
+  const handleSubmit = () => {
+    router.push("/");
   };
 
   return (
-    <MantineProvider
-      theme={{
-        fontFamily: '"Comic Sans MS", cursive, sans-serif',
-      }}
-    >
-      <Center h="100vh" w="100vw" p="md">
-        <Box
-          style={{
-            width: "100%",
-            maxWidth: 400,
-            backgroundColor: "lightblue",
-            borderRadius: "18px",
-            padding: "2rem",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <form onSubmit={handleSubmit}>
-            <Flex
-              gap="sm"
-              justify="center"
-              align="center"
-              direction="column"
-              wrap="wrap"
-            >
-              <Title order={2} mb="xl">
-                Sign up
-              </Title>
+    <Center h="100vh" w="100vw" p="md">
+      <Box
+        style={{
+          width: "100%",
+          maxWidth: 400,
+          backgroundColor: "lightblue",
+          borderRadius: "18px",
+          padding: "2rem",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <form onSubmit={form.onSubmit(handleSubmit)}>
+          <Flex
+            gap="sm"
+            justify="center"
+            align="center"
+            direction="column"
+            wrap="wrap"
+          >
+            <Title order={2} mb="xl">
+              Sign up
+            </Title>
 
-              <TextInput
-                w="100%"
-                label="Email"
-                placeholder="your@email.com"
-                {...form.getInputProps("email")}
-              />
+            <TextInput
+              w="100%"
+              label="Email"
+              placeholder="your@email.com"
+              {...form.getInputProps("email")}
+            />
 
-              <PasswordInput
-                w="100%"
-                label="Password"
-                placeholder="Type your password"
-                {...form.getInputProps("password")}
-              />
+            <PasswordInput
+              w="100%"
+              label="Password"
+              placeholder="Type your password"
+              {...form.getInputProps("password")}
+            />
 
-              <PasswordInput
-                w="100%"
-                label="Confirm password"
-                placeholder="Confirm your password"
-                {...form.getInputProps("confirmedPassword")}
-              />
+            <PasswordInput
+              w="100%"
+              label="Confirm password"
+              placeholder="Confirm your password"
+              {...form.getInputProps("confirmedPassword")}
+            />
 
-              <Button w="100%" type="submit" mt="md" radius="xl">
-                SIGN UP
-              </Button>
+            <Button w="100%" type="submit" mt="md" radius="xl">
+              SIGN UP
+            </Button>
 
-              <Text mt="md" size="sm">
-                Or Login Using
+            <Text mt="md" size="sm">
+              Or Login Using
+            </Text>
+            <Link href="/auth/login">
+              <Text c="black" fw={500} style={{ cursor: "pointer" }}>
+                LOGIN
               </Text>
-              <Link href="/auth/login">
-                <Text c="black" fw={500} style={{ cursor: "pointer" }}>
-                  LOGIN
-                </Text>
-              </Link>
-            </Flex>
-          </form>
-        </Box>
-      </Center>
-    </MantineProvider>
+            </Link>
+          </Flex>
+        </form>
+      </Box>
+    </Center>
   );
 }
