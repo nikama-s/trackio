@@ -28,7 +28,7 @@ export default function SignUpForm() {
       email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
       password: (value) => (value.length > 7 ? null : "Password too short"),
       confirmedPassword: (value, values) =>
-        value == values.password ? null : "Passwords do not match",
+        value === values.password ? null : "Passwords do not match",
     },
   });
 
@@ -51,13 +51,15 @@ export default function SignUpForm() {
         fontFamily: '"Comic Sans MS", cursive, sans-serif',
       }}
     >
-      <Center h="100vh" w="100vw">
+      <Center h="100vh" w="100vw" p="md">
         <Box
           style={{
-            width: "25vw",
-            height: "65vh",
+            width: "100%",
+            maxWidth: 400,
             backgroundColor: "lightblue",
             borderRadius: "18px",
+            padding: "2rem",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
           }}
         >
           <form onSubmit={handleSubmit}>
@@ -68,36 +70,36 @@ export default function SignUpForm() {
               direction="column"
               wrap="wrap"
             >
-              <Title order={1} mt={"5vh"} mb={"5vh"}>
+              <Title order={2} mb="xl">
                 Sign up
               </Title>
 
               <TextInput
-                w={"80%"}
+                w="100%"
                 label="Email"
                 placeholder="your@email.com"
                 {...form.getInputProps("email")}
               />
 
               <PasswordInput
-                w={"80%"}
+                w="100%"
                 label="Password"
                 placeholder="Type your password"
                 {...form.getInputProps("password")}
               />
 
               <PasswordInput
-                w={"80%"}
+                w="100%"
                 label="Confirm password"
                 placeholder="Confirm your password"
                 {...form.getInputProps("confirmedPassword")}
               />
 
-              <Button w={"80%"} type="submit" mt="4vh" radius={"xl"}>
+              <Button w="100%" type="submit" mt="md" radius="xl">
                 SIGN UP
               </Button>
 
-              <Text mt="3vh" size="sm">
+              <Text mt="md" size="sm">
                 Or Login Using
               </Text>
               <Link href="/auth/login">

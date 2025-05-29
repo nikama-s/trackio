@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Mega store",
-  description: "Dev frontend task",
+  title: "Trockio",
+  description: "App to track your tasks",
 };
 
 export default function RootLayout({

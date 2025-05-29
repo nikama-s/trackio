@@ -14,6 +14,7 @@ import {
 import { useForm } from "@mantine/form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
 export default function LoginForm() {
   const form = useForm({
     mode: "uncontrolled",
@@ -32,12 +33,9 @@ export default function LoginForm() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    const validation = form.validate();
-    if (validation.hasErrors) {
+    if (form.validate().hasErrors) {
       return;
     }
-
     router.push("/dashboard");
   };
 
@@ -50,9 +48,12 @@ export default function LoginForm() {
       <Center h="100vh" w="100vw">
         <Box
           style={{
-            width: "25vw",
-            height: "60vh",
+            width: "90%",
+            maxWidth: 400,
             backgroundColor: "lightblue",
+            padding: "2rem",
+            borderRadius: "10px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
           }}
         >
           <form onSubmit={handleSubmit}>
@@ -63,29 +64,29 @@ export default function LoginForm() {
               direction="column"
               wrap="wrap"
             >
-              <Title order={1} mt={"5vh"} mb={"5vh"}>
+              <Title order={2} mb="xl">
                 Login
               </Title>
 
               <TextInput
-                w={"80%"}
+                w="100%"
                 label="Email"
                 placeholder="your@email.com"
                 {...form.getInputProps("email")}
               />
 
               <PasswordInput
-                w={"80%"}
+                w="100%"
                 label="Password"
                 placeholder="Type your password"
                 {...form.getInputProps("password")}
               />
 
-              <Button w={"80%"} type="submit" mt="4vh" radius={"xl"}>
+              <Button w="100%" type="submit" mt="md" radius="xl">
                 LOGIN
               </Button>
 
-              <Text mt="3vh" size="sm">
+              <Text mt="md" size="sm">
                 Or Sign Up Using
               </Text>
               <Link href="/auth/register">
