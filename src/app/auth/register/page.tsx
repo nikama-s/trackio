@@ -11,28 +11,44 @@ import {
 } from "@mantine/core";
 import { useForm, matchesField, isEmail, hasLength } from "@mantine/form";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRegister } from "@/hooks/useAuth";
+import { useState } from "react";
 
 export default function SignUpForm() {
+  const register = useRegister();
+  const [generalError, setGeneralError] = useState<string | null>(null);
+
   const form = useForm({
     mode: "uncontrolled",
     validateInputOnBlur: true,
     initialValues: {
       email: "",
       password: "",
-      confirmedPassword: "",
+      confirmPassword: "",
     },
     validate: {
       email: isEmail("Invalid email"),
       password: hasLength({ min: 8 }, "Password too short"),
-      confirmedPassword: matchesField("password", "Passwords are not the same"),
+      confirmPassword: matchesField("password", "Passwords are not the same"),
     },
   });
 
-  const router = useRouter();
-
-  const handleSubmit = () => {
-    router.push("/");
+  const handleSubmit = async (values: typeof form.values) => {
+    register.mutate(values, {
+      onError: (error) => {
+        if (error?.errors) {
+          Object.entries(error.errors).forEach(([field, messages]) => {
+            form.setFieldError(
+              field as keyof typeof values,
+              messages.join(" ")
+            );
+          });
+        }
+        if (error?.error) {
+          setGeneralError(error.error);
+        }
+      },
+    });
   };
 
   return (
@@ -77,8 +93,13 @@ export default function SignUpForm() {
               w="100%"
               label="Confirm password"
               placeholder="Confirm your password"
-              {...form.getInputProps("confirmedPassword")}
+              {...form.getInputProps("confirmPassword")}
             />
+            {generalError && (
+              <Text c="red" size="sm" mt="xs">
+                {generalError}
+              </Text>
+            )}
 
             <Button w="100%" type="submit" mt="md" radius="xl">
               SIGN UP
