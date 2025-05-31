@@ -20,19 +20,41 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const tasks = await prisma.task.findMany({
+    const statuses = await prisma.status.findMany({
       where: { userId: payload.userId },
       include: {
-        status: true,
-        taskTags: {
+        tasks: {
           include: {
-            tag: true
+            taskTags: {
+              include: {
+                tag: true
+              }
+            }
           }
         }
       }
     });
 
-    return NextResponse.json(tasks);
+    const groupedTasks = statuses.map((status) => ({
+      id: status.id,
+      name: status.name,
+      color: status.color,
+      tasks: status.tasks.map((task) => ({
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        deadline: task.deadline,
+        tags: task.taskTags.map((taskTag) => ({
+          id: taskTag.tag.id,
+          name: taskTag.tag.name,
+          color: taskTag.tag.color
+        })),
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt
+      }))
+    }));
+
+    return NextResponse.json(groupedTasks);
   } catch (error) {
     console.error("Error fetching tasks:", error);
     return NextResponse.json(
