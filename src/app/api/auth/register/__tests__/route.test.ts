@@ -7,11 +7,18 @@ import {
   saveRefreshToken
 } from "@/lib/auth/tokens";
 
+const mockTransaction = {
+  user: {
+    create: jest.fn()
+  }
+};
+
 jest.mock("@/lib/prisma", () => ({
   user: {
     findUnique: jest.fn(),
     create: jest.fn()
-  }
+  },
+  $transaction: jest.fn((callback) => callback(mockTransaction))
 }));
 
 jest.mock("bcryptjs", () => ({
@@ -22,6 +29,18 @@ jest.mock("@/lib/auth/tokens", () => ({
   generateAccessToken: jest.fn(),
   generateRefreshToken: jest.fn(),
   saveRefreshToken: jest.fn()
+}));
+
+jest.mock("@/lib/status/default-statuses", () => ({
+  createDefaultStatuses: jest.fn().mockResolvedValue(undefined)
+}));
+
+jest.mock("@/lib/tags/default-tags", () => ({
+  createDefaultTags: jest.fn().mockResolvedValue(undefined)
+}));
+
+jest.mock("@/lib/auth/cookies", () => ({
+  setAuthCookies: jest.fn().mockImplementation((response) => response)
 }));
 
 jest.mock("next/headers", () => ({
@@ -44,7 +63,7 @@ describe("Register Endpoint", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
-    (prisma.user.create as jest.Mock).mockResolvedValue(mockUser);
+    (mockTransaction.user.create as jest.Mock).mockResolvedValue(mockUser);
     (bcrypt.hash as jest.Mock).mockResolvedValue("hashed-password");
     (generateAccessToken as jest.Mock).mockReturnValue("mock-access-token");
     (generateRefreshToken as jest.Mock).mockReturnValue("mock-refresh-token");
@@ -69,7 +88,7 @@ describe("Register Endpoint", () => {
 
     expect(bcrypt.hash).toHaveBeenCalledWith(validRequest.password, 10);
 
-    expect(prisma.user.create).toHaveBeenCalledWith({
+    expect(mockTransaction.user.create).toHaveBeenCalledWith({
       data: {
         email: validRequest.email,
         password: "hashed-password"
@@ -124,7 +143,7 @@ describe("Register Endpoint", () => {
   });
 
   it("should return 500 for server errors", async () => {
-    (prisma.user.create as jest.Mock).mockRejectedValue(
+    (mockTransaction.user.create as jest.Mock).mockRejectedValue(
       new Error("Database error")
     );
 
