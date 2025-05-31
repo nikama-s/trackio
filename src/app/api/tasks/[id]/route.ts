@@ -105,7 +105,10 @@ export async function PUT(
 }
 
 // DELETE /api/tasks/[id] - Delete a task
-export async function DELETE({ params }: { params: { id: string } }) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;

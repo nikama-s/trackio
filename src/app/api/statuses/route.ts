@@ -58,6 +58,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
+    // Check if status with same name already exists for this user
+    const existingStatus = await prisma.status.findFirst({
+      where: {
+        userId: payload.userId,
+        name
+      }
+    });
+
+    if (existingStatus) {
+      return NextResponse.json(
+        { error: "Status with this name already exists" },
+        { status: 400 }
+      );
+    }
+
     const status = await prisma.status.create({
       data: {
         name,

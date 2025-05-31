@@ -45,6 +45,24 @@ export async function PUT(
       );
     }
 
+    if (name) {
+      // Check if status with same name already exists for this user
+      const existingStatusWithName = await prisma.status.findFirst({
+        where: {
+          userId: payload.userId,
+          name,
+          id: { not: params.id }
+        }
+      });
+
+      if (existingStatusWithName) {
+        return NextResponse.json(
+          { error: "Status with this name already exists" },
+          { status: 400 }
+        );
+      }
+    }
+
     const updatedStatus = await prisma.status.update({
       where: { id: params.id },
       data: {
@@ -64,7 +82,10 @@ export async function PUT(
 }
 
 // DELETE /api/statuses/[id] - Delete a status
-export async function DELETE({ params }: { params: { id: string } }) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
@@ -105,18 +126,39 @@ export async function DELETE({ params }: { params: { id: string } }) {
     });
 
     if (tasksWithStatus) {
-      return NextResponse.json(
-        { error: "Cannot delete status that is in use by tasks" },
-        { status: 400 }
-      );
+      // Find the "To Do" status for this user
+      const toDoStatus = await prisma.status.findFirst({
+        where: {
+          userId: payload.userId,
+          name: "To Do"
+        }
+      });
+
+      if (!toDoStatus) {
+        return NextResponse.json(
+          { error: "Default 'To Do' status not found" },
+          { status: 500 }
+        );
+      }
+
+      // Update all tasks using this status to use "To Do" status instead
+      await prisma.task.updateMany({
+        where: { statusId: params.id },
+        data: { statusId: toDoStatus.id }
+      });
     }
 
+    // Now we can safely delete the status
     await prisma.status.delete({
       where: { id: params.id }
     });
 
     return NextResponse.json(
-      { message: "Status deleted successfully" },
+      {
+        message: tasksWithStatus
+          ? "Status deleted successfully and tasks reassigned to 'To Do'"
+          : "Status deleted successfully"
+      },
       { status: 200 }
     );
   } catch (error) {

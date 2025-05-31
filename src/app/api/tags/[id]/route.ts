@@ -166,7 +166,10 @@ export async function DELETE(
       where: { id: params.id }
     });
 
-    return new NextResponse(null, { status: 204 });
+    return NextResponse.json(
+      { message: "Tag deleted successfully" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error deleting tag:", error);
     return NextResponse.json(
