@@ -4,7 +4,10 @@ import prisma from "@/lib/prisma";
 import { verifyAccessToken } from "@/lib/auth/tokens";
 
 // GET /api/tasks/[id] - Get a specific task
-export async function GET({ params }: { params: { id: string } }) {
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
@@ -136,6 +139,12 @@ export async function DELETE(
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
+    // Delete all TaskTag relations first
+    await prisma.taskTag.deleteMany({
+      where: { taskId: params.id }
+    });
+
+    // Then delete the task
     await prisma.task.delete({
       where: { id: params.id }
     });
