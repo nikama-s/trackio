@@ -9,6 +9,7 @@ import {
 } from "@/lib/auth/tokens";
 import { setAuthCookies } from "@/lib/auth/cookies";
 import { createDefaultStatuses } from "@/lib/status/default-statuses";
+import { createDefaultTags } from "@/lib/tags/default-tags";
 
 export async function POST(request: Request) {
   try {
@@ -42,7 +43,12 @@ export async function POST(request: Request) {
           password: hashedPassword
         }
       });
-      await createDefaultStatuses(newUser.id);
+
+      await Promise.all([
+        createDefaultStatuses(newUser.id),
+        createDefaultTags(newUser.id)
+      ]);
+
       return [newUser];
     });
 

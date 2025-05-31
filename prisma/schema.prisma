@@ -32,6 +32,7 @@ model Task {
   deadline    DateTime?
   userId      String   @db.ObjectId
   user        User     @relation(fields: [userId], references: [id])
+  taskTags    TaskTag[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -48,6 +49,7 @@ model User {
   refreshTokens RefreshToken[]
   tasks         Task[]
   statuses      Status[]
+  tags          Tag[]
 }
 
 model RefreshToken {
@@ -59,4 +61,32 @@ model RefreshToken {
   createdAt DateTime @default(now())
   @@index([userId])
   @@index([expiresAt])
+}
+
+model Tag {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  color       String?
+  isDefault   Boolean  @default(false)
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  taskTags    TaskTag[]
+
+  @@unique([name, userId])
+  @@index([userId])
+}
+
+model TaskTag {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  taskId    String   @db.ObjectId
+  task      Task     @relation(fields: [taskId], references: [id])
+  tagId     String   @db.ObjectId
+  tag       Tag      @relation(fields: [tagId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([taskId, tagId])
+  @@index([taskId])
+  @@index([tagId])
 }

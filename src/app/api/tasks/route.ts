@@ -23,7 +23,12 @@ export async function GET() {
     const tasks = await prisma.task.findMany({
       where: { userId: payload.userId },
       include: {
-        status: true
+        status: true,
+        taskTags: {
+          include: {
+            tag: true
+          }
+        }
       }
     });
 
@@ -56,7 +61,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    const { title, description, statusId, deadline } = body;
+    const { title, description, statusId, deadline, tagIds } = body;
 
     if (!title) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 });
@@ -68,10 +73,25 @@ export async function POST(request: Request) {
         description,
         statusId,
         deadline: deadline ? new Date(deadline) : null,
-        userId: payload.userId
+        userId: payload.userId,
+        taskTags: {
+          create:
+            tagIds?.map((tagId: string) => ({
+              tag: {
+                connect: {
+                  id: tagId
+                }
+              }
+            })) || []
+        }
       },
       include: {
-        status: true
+        status: true,
+        taskTags: {
+          include: {
+            tag: true
+          }
+        }
       }
     });
 
