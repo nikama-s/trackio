@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import axiosInstance from "@/utils/axiosinstance";
+import api from "@/lib/api/axiosInstance";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
@@ -27,7 +27,7 @@ export function useLogin() {
   >({
     mutationFn: async (data) => {
       try {
-        const res = await axiosInstance.post("/auth/login", data);
+        const res = await api.post("/api/auth/login", data);
         return res.data;
       } catch (err: unknown) {
         const axiosError = err as AxiosError<ErrorResponse>;
@@ -44,7 +44,7 @@ export function useLogin() {
         setUser(data.user);
         router.push("/");
       }
-    },
+    }
   });
 }
 
@@ -59,7 +59,7 @@ export function useRegister() {
   >({
     mutationFn: async (data) => {
       try {
-        const res = await axiosInstance.post("/auth/register", data);
+        const res = await api.post("/api/auth/register", data);
         return res.data;
       } catch (err: unknown) {
         const axiosError = err as AxiosError<ErrorResponse>;
@@ -76,6 +76,6 @@ export function useRegister() {
         setUser(data.user);
         router.push("/");
       }
-    },
+    }
   });
 }
