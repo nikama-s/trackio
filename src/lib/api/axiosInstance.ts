@@ -19,36 +19,7 @@ api.interceptors.response.use(
     };
 
     if (error.response?.status === 401 && !originalRequest._retry) {
-      if (originalRequest.url?.includes("/auth/")) {
-        return Promise.reject(error);
-      }
-      originalRequest._retry = true;
-
-      if (isRefreshing) {
-        return new Promise<AxiosResponse>((resolve, reject) => {
-          subscribeTokenRefresh(() => {
-            if (originalRequest) {
-              resolve(api(originalRequest));
-            } else {
-              reject(
-                new Error(
-                  "Original request config is missing after token refresh."
-                )
-              );
-            }
-          });
-        });
-      }
-
-      isRefreshing = true;
-
-      try {
-        await refreshAccessToken();
-        return await api(originalRequest);
-      } catch (refreshError) {
-        isRefreshing = false;
-        return Promise.reject(refreshError);
-      }
+      return handle401Error(error, originalRequest);
     }
 
     if (error.response) {
@@ -66,6 +37,41 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+async function handle401Error(
+  error: AxiosError,
+  originalRequest: AxiosRequestConfig & { _retry?: boolean }
+): Promise<AxiosResponse> {
+  if (originalRequest.url?.includes("/auth/")) {
+    return Promise.reject(error);
+  }
+
+  originalRequest._retry = true;
+
+  if (isRefreshing) {
+    return new Promise<AxiosResponse>((resolve, reject) => {
+      subscribeTokenRefresh(() => {
+        if (originalRequest) {
+          resolve(api(originalRequest));
+        } else {
+          reject(
+            new Error("Original request config is missing after token refresh.")
+          );
+        }
+      });
+    });
+  }
+
+  isRefreshing = true;
+
+  try {
+    await refreshAccessToken();
+    return await api(originalRequest);
+  } catch (refreshError) {
+    isRefreshing = false;
+    return Promise.reject(refreshError);
+  }
+}
 
 function subscribeTokenRefresh(cb: () => void): void {
   refreshSubscribers.push(cb);
