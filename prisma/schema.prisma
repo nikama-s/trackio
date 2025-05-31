@@ -10,11 +10,17 @@ datasource db {
 
 model Status {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  name        String   @unique
+  name        String
   color       String?
+  isDefault   Boolean  @default(false)
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   tasks       Task[]
+
+  @@unique([name, userId])
+  @@index([userId])
 }
 
 model Task {
@@ -41,6 +47,7 @@ model User {
   updatedAt DateTime @updatedAt
   refreshTokens RefreshToken[]
   tasks         Task[]
+  statuses      Status[]
 }
 
 model RefreshToken {
