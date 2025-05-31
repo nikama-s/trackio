@@ -75,6 +75,13 @@ export async function PATCH(
     const body = await request.json();
     const { name, color } = body;
 
+    if (name && tag.isDefault) {
+      return NextResponse.json(
+        { error: "Cannot modify name of default tag" },
+        { status: 400 }
+      );
+    }
+
     if (name) {
       // Check if tag with same name already exists for this user
       const existingTag = await prisma.tag.findFirst({

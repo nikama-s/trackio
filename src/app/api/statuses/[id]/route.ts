@@ -38,6 +38,13 @@ export async function PUT(
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
+    if (name && existingStatus.isDefault) {
+      return NextResponse.json(
+        { error: "Cannot modify name of default status" },
+        { status: 400 }
+      );
+    }
+
     const updatedStatus = await prisma.status.update({
       where: { id: params.id },
       data: {
