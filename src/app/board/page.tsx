@@ -295,13 +295,11 @@ export default function Board() {
     const activeId = active.id.toString();
     const overId = over.id.toString();
 
-    // Если задача перемещается в другую группу
     if (activeId.startsWith("task") && overId.startsWith("status")) {
       setGroups((prevGroups) => {
         const newGroups = [...prevGroups];
         let movedTask: TaskProps | null = null;
 
-        // Находим задачу и удаляем её из исходной группы
         for (const group of newGroups) {
           const taskIndex = group.tasks.findIndex(
             (task) => task.id === activeId
@@ -313,7 +311,6 @@ export default function Board() {
           }
         }
 
-        // Добавляем задачу в новую группу
         if (movedTask) {
           const targetGroupIndex = newGroups.findIndex(
             (group) => group.id === overId
