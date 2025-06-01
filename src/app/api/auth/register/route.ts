@@ -8,6 +8,8 @@ import {
   saveRefreshToken
 } from "@/lib/auth/tokens";
 import { setAuthCookies } from "@/lib/auth/cookies";
+import { createDefaultStatuses } from "@/lib/status/default-statuses";
+import { createDefaultTags } from "@/lib/tags/default-tags";
 
 export async function POST(request: Request) {
   try {
@@ -34,11 +36,20 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword
-      }
+    const [user] = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          email,
+          password: hashedPassword
+        }
+      });
+
+      await Promise.all([
+        createDefaultStatuses(newUser.id),
+        createDefaultTags(newUser.id)
+      ]);
+
+      return [newUser];
     });
 
     const accessToken = generateAccessToken(user.id, user.email);
