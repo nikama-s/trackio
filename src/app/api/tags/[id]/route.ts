@@ -4,10 +4,9 @@ import prisma from "@/lib/prisma";
 import { verifyAccessToken } from "@/lib/auth/tokens";
 
 // GET /api/tags/[id] - Get a specific tag
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function GET(request: Request, context: any) {
+  const { params } = context;
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
@@ -42,10 +41,9 @@ export async function GET(
 }
 
 // PATCH /api/tags/[id] - Update a tag
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function PATCH(request: Request, context: any) {
+  const { params } = context;
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
@@ -119,10 +117,9 @@ export async function PATCH(
 }
 
 // DELETE /api/tags/[id] - Delete a tag
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function DELETE(request: Request, context: any) {
+  const { params } = context;
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
