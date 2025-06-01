@@ -10,7 +10,8 @@ import {
   expectForbidden,
   expectDatabaseError,
   mockUnauthorizedCookies,
-  setupAuthMocks
+  setupAuthMocks,
+  expectBadRequest
 } from "@/test/utils/api-test-utils";
 
 // Mock setup
@@ -22,6 +23,12 @@ jest.mock("@/lib/prisma", () => ({
   },
   taskTag: {
     deleteMany: jest.fn()
+  },
+  status: {
+    findFirst: jest.fn()
+  },
+  tag: {
+    findMany: jest.fn()
   }
 }));
 
@@ -47,14 +54,24 @@ describe("Task ID API", () => {
       id: "status-1",
       name: "To Do",
       color: "#000000"
-    }
+    },
+    taskTags: [
+      {
+        tag: {
+          id: "tag-1",
+          name: "Important",
+          color: "#FF0000"
+        }
+      }
+    ]
   };
 
   const updateRequest = {
     title: "Updated Task",
     description: "Updated Description",
     statusId: "status-2",
-    deadline: new Date("2025-06-02T15:02:31.888Z").toISOString()
+    deadline: new Date("2025-06-02T15:02:31.888Z").toISOString(),
+    tagIds: ["tag-1", "tag-2"]
   };
 
   beforeEach(() => {
@@ -112,7 +129,14 @@ describe("Task ID API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data).toEqual(mockTask);
+      expect(data).toEqual({
+        ...mockTask,
+        tags: mockTask.taskTags.map((taskTag) => ({
+          id: taskTag.tag.id,
+          name: taskTag.tag.name,
+          color: taskTag.tag.color
+        }))
+      });
     });
 
     it("should return 500 if database error", async () => {
@@ -160,14 +184,65 @@ describe("Task ID API", () => {
       await expectForbidden(response);
     });
 
-    it("should update task if found and belongs to user", async () => {
+    it("should return 400 if status not found", async () => {
+      (prisma.task.findUnique as jest.Mock).mockResolvedValue(mockTask);
+      (prisma.status.findFirst as jest.Mock).mockResolvedValue(null);
+
+      const response = await PUT(
+        createRequest("/api/tasks/task-1", "PUT", updateRequest),
+        { params: { id: "task-1" } }
+      );
+      await expectBadRequest(response, "Status not found");
+    });
+
+    it("should return 400 if one or more tags not found", async () => {
+      (prisma.task.findUnique as jest.Mock).mockResolvedValue(mockTask);
+      (prisma.status.findFirst as jest.Mock).mockResolvedValue({
+        id: "status-2"
+      });
+      (prisma.tag.findMany as jest.Mock).mockResolvedValue([
+        { id: "tag-1", name: "Tag 1" }
+      ]);
+
+      const response = await PUT(
+        createRequest("/api/tasks/task-1", "PUT", updateRequest),
+        { params: { id: "task-1" } }
+      );
+      await expectBadRequest(response, "One or more tags not found");
+    });
+
+    it("should update task with tags successfully", async () => {
       const updatedTask = {
         ...mockTask,
         ...updateRequest,
-        updatedAt: new Date("2025-06-02T15:02:31.888Z").toISOString()
+        updatedAt: new Date("2025-06-02T15:02:31.888Z").toISOString(),
+        taskTags: [
+          {
+            tag: {
+              id: "tag-1",
+              name: "Tag 1",
+              color: "#FF0000"
+            }
+          },
+          {
+            tag: {
+              id: "tag-2",
+              name: "Tag 2",
+              color: "#00FF00"
+            }
+          }
+        ]
       };
 
       (prisma.task.findUnique as jest.Mock).mockResolvedValue(mockTask);
+      (prisma.status.findFirst as jest.Mock).mockResolvedValue({
+        id: "status-2"
+      });
+      (prisma.tag.findMany as jest.Mock).mockResolvedValue([
+        { id: "tag-1", name: "Tag 1", color: "#FF0000" },
+        { id: "tag-2", name: "Tag 2", color: "#00FF00" }
+      ]);
+      (prisma.taskTag.deleteMany as jest.Mock).mockResolvedValue({ count: 2 });
       (prisma.task.update as jest.Mock).mockResolvedValue(updatedTask);
 
       const response = await PUT(
@@ -178,22 +253,98 @@ describe("Task ID API", () => {
 
       expect(response.status).toBe(200);
       expect(data).toEqual(updatedTask);
+      expect(prisma.taskTag.deleteMany).toHaveBeenCalledWith({
+        where: { taskId: "task-1" }
+      });
       expect(prisma.task.update).toHaveBeenCalledWith({
         where: { id: "task-1" },
         data: {
           title: updateRequest.title,
           description: updateRequest.description,
           statusId: updateRequest.statusId,
-          deadline: new Date(updateRequest.deadline)
+          deadline: new Date(updateRequest.deadline),
+          taskTags: {
+            create: updateRequest.tagIds.map((tagId) => ({
+              tag: {
+                connect: {
+                  id: tagId
+                }
+              }
+            }))
+          }
         },
         include: {
-          status: true
+          status: true,
+          taskTags: {
+            include: {
+              tag: true
+            }
+          }
+        }
+      });
+    });
+
+    it("should update task without tags successfully", async () => {
+      const updateRequestWithoutTags = {
+        ...updateRequest,
+        tagIds: undefined
+      };
+      const updatedTask = {
+        ...mockTask,
+        ...updateRequestWithoutTags,
+        updatedAt: new Date("2025-06-02T15:02:31.888Z").toISOString(),
+        taskTags: []
+      };
+
+      (prisma.task.findUnique as jest.Mock).mockResolvedValue(mockTask);
+      (prisma.status.findFirst as jest.Mock).mockResolvedValue({
+        id: "status-2"
+      });
+      (prisma.taskTag.deleteMany as jest.Mock).mockResolvedValue({ count: 0 });
+      (prisma.task.update as jest.Mock).mockResolvedValue(updatedTask);
+
+      const response = await PUT(
+        createRequest("/api/tasks/task-1", "PUT", updateRequestWithoutTags),
+        { params: { id: "task-1" } }
+      );
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toEqual(updatedTask);
+      expect(prisma.taskTag.deleteMany).toHaveBeenCalledWith({
+        where: { taskId: "task-1" }
+      });
+      expect(prisma.task.update).toHaveBeenCalledWith({
+        where: { id: "task-1" },
+        data: {
+          title: updateRequestWithoutTags.title,
+          description: updateRequestWithoutTags.description,
+          statusId: updateRequestWithoutTags.statusId,
+          deadline: new Date(updateRequestWithoutTags.deadline),
+          taskTags: {
+            create: []
+          }
+        },
+        include: {
+          status: true,
+          taskTags: {
+            include: {
+              tag: true
+            }
+          }
         }
       });
     });
 
     it("should return 500 if database error", async () => {
       (prisma.task.findUnique as jest.Mock).mockResolvedValue(mockTask);
+      (prisma.status.findFirst as jest.Mock).mockResolvedValue({
+        id: "status-2"
+      });
+      (prisma.tag.findMany as jest.Mock).mockResolvedValue([
+        { id: "tag-1", name: "Tag 1" },
+        { id: "tag-2", name: "Tag 2" }
+      ]);
       (prisma.task.update as jest.Mock).mockRejectedValue(
         new Error("Database error")
       );

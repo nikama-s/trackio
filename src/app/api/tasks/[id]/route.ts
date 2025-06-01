@@ -25,7 +25,12 @@ export async function GET(request: Request, context: any) {
     const task = await prisma.task.findUnique({
       where: { id: params.id },
       include: {
-        status: true
+        status: true,
+        taskTags: {
+          include: {
+            tag: true
+          }
+        }
       }
     });
 
@@ -37,7 +42,17 @@ export async function GET(request: Request, context: any) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    return NextResponse.json(task);
+    // Transform the response to include tags in a more convenient format
+    const transformedTask = {
+      ...task,
+      tags: task.taskTags.map((taskTag) => ({
+        id: taskTag.tag.id,
+        name: taskTag.tag.name,
+        color: taskTag.tag.color
+      }))
+    };
+
+    return NextResponse.json(transformedTask);
   } catch (error) {
     console.error("Error fetching task:", error);
     return NextResponse.json(
@@ -68,7 +83,7 @@ export async function PUT(request: Request, context: any) {
 
     const body = await request.json();
 
-    const { title, description, statusId, deadline } = body;
+    const { title, description, statusId, deadline, tagIds } = body;
 
     const existingTask = await prisma.task.findUnique({
       where: { id: params.id }
@@ -82,16 +97,70 @@ export async function PUT(request: Request, context: any) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
+    // If statusId is provided, verify it exists and belongs to user
+    if (statusId) {
+      const status = await prisma.status.findFirst({
+        where: {
+          id: statusId,
+          userId: payload.userId
+        }
+      });
+
+      if (!status) {
+        return NextResponse.json(
+          { error: "Status not found" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // If tagIds are provided, verify they all exist and belong to user
+    if (tagIds?.length > 0) {
+      const tags = await prisma.tag.findMany({
+        where: {
+          id: { in: tagIds },
+          userId: payload.userId
+        }
+      });
+
+      if (tags.length !== tagIds.length) {
+        return NextResponse.json(
+          { error: "One or more tags not found" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Delete existing task tags
+    await prisma.taskTag.deleteMany({
+      where: { taskId: params.id }
+    });
+
     const updatedTask = await prisma.task.update({
       where: { id: params.id },
       data: {
         title: title ?? existingTask.title,
         description: description ?? existingTask.description,
         statusId: statusId ?? existingTask.statusId,
-        deadline: deadline ? new Date(deadline) : existingTask.deadline
+        deadline: deadline ? new Date(deadline) : existingTask.deadline,
+        taskTags: {
+          create:
+            tagIds?.map((tagId: string) => ({
+              tag: {
+                connect: {
+                  id: tagId
+                }
+              }
+            })) || []
+        }
       },
       include: {
-        status: true
+        status: true,
+        taskTags: {
+          include: {
+            tag: true
+          }
+        }
       }
     });
 
