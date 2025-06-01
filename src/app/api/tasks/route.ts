@@ -3,6 +3,27 @@ import { cookies } from "next/headers";
 import prisma from "@/lib/prisma";
 import { verifyAccessToken } from "@/lib/auth/tokens";
 
+type StatusWithTasks = {
+  id: string;
+  name: string;
+  color: string | null;
+  tasks: Array<{
+    id: string;
+    title: string;
+    description: string | null;
+    deadline: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+    taskTags: Array<{
+      tag: {
+        id: string;
+        name: string;
+        color: string | null;
+      };
+    }>;
+  }>;
+};
+
 // GET /api/tasks - Get all tasks for the authenticated user
 export async function GET() {
   try {
@@ -35,7 +56,7 @@ export async function GET() {
       }
     });
 
-    const groupedTasks = statuses.map((status) => ({
+    const groupedTasks = statuses.map((status: StatusWithTasks) => ({
       id: status.id,
       name: status.name,
       color: status.color,
@@ -87,6 +108,42 @@ export async function POST(request: Request) {
 
     if (!title) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 });
+    }
+
+    if (!statusId) {
+      return NextResponse.json(
+        { error: "Status ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Check if status exists and belongs to user
+    const status = await prisma.status.findFirst({
+      where: {
+        id: statusId,
+        userId: payload.userId
+      }
+    });
+
+    if (!status) {
+      return NextResponse.json({ error: "Status not found" }, { status: 400 });
+    }
+
+    // If tagIds are provided, verify they all exist and belong to user
+    if (tagIds?.length > 0) {
+      const tags = await prisma.tag.findMany({
+        where: {
+          id: { in: tagIds },
+          userId: payload.userId
+        }
+      });
+
+      if (tags.length !== tagIds.length) {
+        return NextResponse.json(
+          { error: "One or more tags not found" },
+          { status: 400 }
+        );
+      }
     }
 
     const task = await prisma.task.create({
