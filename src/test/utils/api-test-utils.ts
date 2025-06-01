@@ -66,18 +66,18 @@ export const setupAuthMocks = (
   cookies: jest.Mock
 ) => {
   verifyAccessToken.mockReturnValue(mockUser);
-  cookies.mockReturnValue({
+  cookies.mockImplementation(() => ({
     get: jest.fn().mockImplementation((name) => {
       if (name === "accessToken") {
         return { value: "mock-access-token" };
       }
       return null;
     })
-  });
+  }));
 };
 
 export const mockUnauthorizedCookies = (cookies: jest.Mock) => {
-  cookies.mockReturnValueOnce({
+  cookies.mockImplementationOnce(() => ({
     get: jest.fn().mockReturnValue(null)
-  });
+  }));
 };
