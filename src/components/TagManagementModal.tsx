@@ -4,6 +4,7 @@ import { useUpdateTask } from "@/hooks/useTask";
 import { useState, useMemo } from "react";
 import { notifications } from "@mantine/notifications";
 import { isEqual } from "lodash";
+import TagEditModal from "./TagEditModal";
 
 interface TagManagementModalProps {
   opened: boolean;
@@ -20,6 +21,7 @@ export default function TagManagementModal({
 }: TagManagementModalProps) {
   const { data: availableTags = [], isLoading: isLoadingTags } = useTags();
   const updateTask = useUpdateTask();
+  const [isTagEditModalOpen, setIsTagEditModalOpen] = useState(false);
   const initialTagIds = useMemo(
     () => currentTags.map((tag) => tag.id),
     [currentTags]
@@ -40,12 +42,6 @@ export default function TagManagementModal({
         }
       });
 
-      notifications.show({
-        title: "Success",
-        message: "Tags updated successfully",
-        color: "green"
-      });
-
       onClose();
     } catch (error) {
       notifications.show({
@@ -58,38 +54,54 @@ export default function TagManagementModal({
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Manage Tags">
-      <Stack pos="relative">
-        <MultiSelect
-          data={availableTags.map((tag) => ({
-            value: tag.id,
-            label: tag.name,
-            color: tag.color
-          }))}
-          value={selectedTags}
-          onChange={setSelectedTags}
-          label="Select Tags"
-          placeholder={selectedTags ? "" : "Choose tags"}
-          searchable
-          disabled={isLoadingTags || updateTask.isPending}
-        />
-        <Group justify="flex-end">
-          <Button
-            variant="default"
-            onClick={onClose}
-            disabled={updateTask.isPending}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
-            loading={updateTask.isPending}
-            disabled={isLoadingTags || !hasChanges}
-          >
-            Save
-          </Button>
-        </Group>
-      </Stack>
-    </Modal>
+    <>
+      <Modal opened={opened} onClose={onClose} title="Edit Tags">
+        <Stack pos="relative">
+          <MultiSelect
+            data={availableTags.map((tag) => ({
+              value: tag.id,
+              label: tag.name,
+              color: tag.color
+            }))}
+            value={selectedTags}
+            onChange={setSelectedTags}
+            label="Select Tags"
+            placeholder={selectedTags ? "" : "Choose tags"}
+            searchable
+            disabled={isLoadingTags || updateTask.isPending}
+          />
+          <Group justify="space-between">
+            <Button
+              variant="default"
+              onClick={() => setIsTagEditModalOpen(true)}
+              disabled={isLoadingTags || updateTask.isPending}
+            >
+              Manage Tags
+            </Button>
+            <Group>
+              <Button
+                variant="default"
+                onClick={onClose}
+                disabled={updateTask.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSave}
+                loading={updateTask.isPending}
+                disabled={isLoadingTags || !hasChanges}
+              >
+                Save
+              </Button>
+            </Group>
+          </Group>
+        </Stack>
+      </Modal>
+
+      <TagEditModal
+        opened={isTagEditModalOpen}
+        onClose={() => setIsTagEditModalOpen(false)}
+      />
+    </>
   );
 }
