@@ -8,6 +8,38 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Status {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  color       String?
+  isDefault   Boolean  @default(false)
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tasks       Task[]
+
+  @@unique([name, userId])
+  @@index([userId])
+}
+
+model Task {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  statusId    String   @db.ObjectId
+  status      Status   @relation(fields: [statusId], references: [id])
+  deadline    DateTime?
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  taskTags    TaskTag[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([statusId])
+}
+
 model User {
   id       String @id @default(auto()) @map("_id") @db.ObjectId
   email    String @unique
@@ -15,6 +47,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   refreshTokens RefreshToken[]
+  tasks         Task[]
+  statuses      Status[]
+  tags          Tag[]
 }
 
 model RefreshToken {
@@ -26,4 +61,32 @@ model RefreshToken {
   createdAt DateTime @default(now())
   @@index([userId])
   @@index([expiresAt])
+}
+
+model Tag {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  color       String?
+  isDefault   Boolean  @default(false)
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  taskTags    TaskTag[]
+
+  @@unique([name, userId])
+  @@index([userId])
+}
+
+model TaskTag {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  taskId    String   @db.ObjectId
+  task      Task     @relation(fields: [taskId], references: [id])
+  tagId     String   @db.ObjectId
+  tag       Tag      @relation(fields: [tagId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([taskId, tagId])
+  @@index([taskId])
+  @@index([tagId])
 }
