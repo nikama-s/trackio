@@ -1,13 +1,90 @@
-import { GroupProps } from "@/app/board/page";
+"use client";
+
+import { GroupProps, TagProps } from "@/app/board/page";
 import SingleTask from "./SingleTask";
-import { ActionIcon, Box, Flex, Text, Title } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Flex,
+  Title,
+  TextInput,
+  Drawer,
+  Textarea,
+  Text,
+  Button,
+  Select,
+  MultiSelect,
+  Loader,
+} from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useDroppable } from "@dnd-kit/core";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useDisclosure } from "@mantine/hooks";
 
 export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
-  const { isOver, setNodeRef } = useDroppable({
-    id,
+  const { isOver, setNodeRef } = useDroppable({ id });
+  const queryClient = useQueryClient();
+  const [opened, { open, close }] = useDisclosure(false);
+
+  // Стейти
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [deadline, setDeadline] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(id); // Поточна група за замовчуванням
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  // Запити для статусів (груп) і тегів
+  const { data: statuses, isLoading: loadingStatuses } = useQuery({
+    queryKey: ["statuses"],
+    queryFn: async () => {
+      const res = await fetch("/api/statuses");
+      if (!res.ok) throw new Error("Failed to fetch statuses");
+      return res.json(); // очікується масив: [{ id, name }]
+    },
   });
+
+  const { data: tags, isLoading: loadingTags } = useQuery({
+    queryKey: ["tags"],
+    queryFn: async () => {
+      const res = await fetch("/api/tags");
+      if (!res.ok) throw new Error("Failed to fetch tags");
+      return res.json(); // очікується масив: [{ id, name }]
+    },
+  });
+
+  // Мутація
+  const { mutate: addTask, isPending } = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newTaskTitle,
+          statusId: selectedStatus,
+          description,
+          deadline,
+          tagIds: selectedTags,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to add task");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      setNewTaskTitle("");
+      setDescription("");
+      setDeadline("");
+      setSelectedTags([]);
+      setSelectedStatus(id); // Повернути групу за замовчуванням
+      close();
+    },
+  });
+
+  const handleAddTask = () => {
+    if (!newTaskTitle.trim()) return;
+    addTask();
+  };
 
   const style = {
     backgroundColor: isOver ? "lightgreen" : "lightblue",
@@ -24,6 +101,68 @@ export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
         ...style,
       }}
     >
+      <Drawer opened={opened} onClose={close} title="New task" size="md">
+        <Flex direction="column" gap="sm">
+          <TextInput
+            label="Title"
+            placeholder="Enter task title"
+            value={newTaskTitle}
+            onChange={(e) => setNewTaskTitle(e.currentTarget.value)}
+          />
+          <Textarea
+            label="Description"
+            placeholder="Enter task description"
+            value={description}
+            onChange={(e) => setDescription(e.currentTarget.value)}
+          />
+          <TextInput
+            label="Deadline"
+            type="date"
+            value={deadline}
+            onChange={(e) => setDeadline(e.currentTarget.value)}
+          />
+
+          {loadingStatuses ? (
+            <Loader size="sm" />
+          ) : (
+            <Select
+              label="Group (Status)"
+              data={
+                statuses?.map((status: GroupProps) => ({
+                  value: status.id,
+                  label: status.name,
+                })) || []
+              }
+              value={selectedStatus}
+              onChange={setSelectedStatus}
+              placeholder="Select group"
+            />
+          )}
+
+          {loadingTags ? (
+            <Loader size="sm" />
+          ) : (
+            <MultiSelect
+              label="Tags"
+              data={
+                tags?.map((tag: TagProps) => ({
+                  value: tag.id,
+                  label: tag.name,
+                })) || []
+              }
+              value={selectedTags}
+              onChange={setSelectedTags}
+              placeholder="Select tags"
+              searchable
+            />
+          )}
+
+          <Button onClick={handleAddTask} loading={isPending} mt="md">
+            Create Task
+          </Button>
+        </Flex>
+      </Drawer>
+
       <Flex gap="md" justify="space-between">
         <Title order={2} mb="xl">
           {name}
@@ -36,14 +175,20 @@ export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
 
       <Flex gap="md" justify="center" align="center" direction="column">
         {tasks.map((task) => (
-          <SingleTask {...task} key={task.id}></SingleTask>
+          <SingleTask {...task} key={task.id} />
         ))}
       </Flex>
-      <Flex mt="md" align="center" direction="row" wrap="nowrap">
-        <ActionIcon variant="transparent" size="sm">
-          <IconPlus color="black"></IconPlus>
+
+      <Flex align="center" direction="row" wrap="nowrap" mt="md">
+        <ActionIcon
+          variant="transparent"
+          size="md"
+          onClick={open}
+          disabled={isPending}
+        >
+          <IconPlus color="black" />
         </ActionIcon>
-        <Text size="sm">Add new task</Text>
+        <Text>Add task</Text>
       </Flex>
     </Box>
   );
