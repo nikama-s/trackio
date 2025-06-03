@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import prisma from "@/lib/prisma";
 import { verifyAccessToken } from "@/lib/auth/tokens";
@@ -25,7 +25,7 @@ type StatusWithTasks = {
 };
 
 // GET /api/tasks - Get all tasks for the authenticated user
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
@@ -41,10 +41,56 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const params = req.nextUrl.searchParams;
+
+    const statusIds = params.getAll("statusId[]");
+    const tagIds = params.getAll("tags[]");
+    const deadlineBefore = params.get("deadlineBefore");
+    const deadlineAfter = params.get("deadlineAfter");
+    const search = params.get("search");
+
     const statuses = await prisma.status.findMany({
-      where: { userId: payload.userId },
+      where: {
+        userId: payload.userId,
+        ...(statusIds.length > 0 && {
+          id: { in: statusIds }
+        })
+      },
       include: {
         tasks: {
+          where: {
+            ...(deadlineBefore && {
+              deadline: { lt: new Date(deadlineBefore) }
+            }),
+            ...(deadlineAfter && {
+              deadline: { gt: new Date(deadlineAfter) }
+            }),
+            ...(search && {
+              OR: [
+                {
+                  title: {
+                    contains: search,
+                    mode: "insensitive"
+                  }
+                },
+                {
+                  description: {
+                    contains: search,
+                    mode: "insensitive"
+                  }
+                }
+              ]
+            }),
+            ...(tagIds.length > 0 && {
+              taskTags: {
+                some: {
+                  tagId: {
+                    in: tagIds
+                  }
+                }
+              }
+            })
+          },
           include: {
             taskTags: {
               include: {
