@@ -7,6 +7,7 @@ import { verifyAccessToken } from "@/lib/auth/tokens";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function GET(request: Request, context: any) {
   const { params } = context;
+  const { id } = await params;
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
@@ -23,7 +24,7 @@ export async function GET(request: Request, context: any) {
     }
 
     const task = await prisma.task.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         status: true,
         taskTags: {
@@ -66,6 +67,7 @@ export async function GET(request: Request, context: any) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function PUT(request: Request, context: any) {
   const { params } = context;
+  const { id } = await params;
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
@@ -86,7 +88,7 @@ export async function PUT(request: Request, context: any) {
     const { title, description, statusId, deadline, tagIds } = body;
 
     const existingTask = await prisma.task.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     });
 
     if (!existingTask) {
@@ -129,20 +131,23 @@ export async function PUT(request: Request, context: any) {
           { status: 400 }
         );
       }
+
+      await prisma.taskTag.deleteMany({
+        where: { taskId: id }
+      });
     }
 
-    // Delete existing task tags
-    await prisma.taskTag.deleteMany({
-      where: { taskId: params.id }
-    });
-
     const updatedTask = await prisma.task.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         title: title ?? existingTask.title,
         description: description ?? existingTask.description,
         statusId: statusId ?? existingTask.statusId,
-        deadline: deadline ? new Date(deadline) : existingTask.deadline,
+        deadline: body.hasOwnProperty("deadline")
+          ? deadline
+            ? new Date(deadline)
+            : null
+          : existingTask.deadline,
         taskTags: {
           create:
             tagIds?.map((tagId: string) => ({
@@ -178,6 +183,7 @@ export async function PUT(request: Request, context: any) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function DELETE(request: Request, context: any) {
   const { params } = context;
+  const { id } = await params;
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
@@ -194,7 +200,7 @@ export async function DELETE(request: Request, context: any) {
     }
 
     const existingTask = await prisma.task.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     });
 
     if (!existingTask) {
@@ -207,12 +213,12 @@ export async function DELETE(request: Request, context: any) {
 
     // Delete all TaskTag relations first
     await prisma.taskTag.deleteMany({
-      where: { taskId: params.id }
+      where: { taskId: id }
     });
 
     // Then delete the task
     await prisma.task.delete({
-      where: { id: params.id }
+      where: { id: id }
     });
 
     return NextResponse.json(

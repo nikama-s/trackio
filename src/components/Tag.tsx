@@ -1,5 +1,10 @@
 import { Badge } from "@mantine/core";
-import { TagProps } from "@/app/board/page";
+
+interface TagProps {
+  name: string;
+  color: string | null;
+}
+
 export default function Tag({ name, color }: TagProps) {
-  return <Badge color={color}>{name}</Badge>;
+  return <Badge color={color || "gray"}>{name}</Badge>;
 }

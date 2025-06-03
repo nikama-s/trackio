@@ -2,13 +2,17 @@ import "@mantine/core/styles.css";
 import "./globals.css";
 import { MantineProvider } from "@mantine/core";
 import { Providers } from "@/Providers";
+import { Notifications } from "@mantine/notifications";
+import "@mantine/notifications/styles.css";
+import "@mantine/dates/styles.css";
+
 export const metadata = {
   title: "Trackio",
-  description: "App to track your tasks",
+  description: "App to track your tasks"
 };
 
 export default function RootLayout({
-  children,
+  children
 }: {
   children: React.ReactNode;
 }) {
@@ -18,9 +22,10 @@ export default function RootLayout({
         <Providers>
           <MantineProvider
             theme={{
-              fontFamily: '"Comic Sans MS", cursive, sans-serif',
+              fontFamily: '"Comic Sans MS", cursive, sans-serif'
             }}
           >
+            <Notifications />
             {children}
           </MantineProvider>
         </Providers>
