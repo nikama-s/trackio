@@ -25,10 +25,7 @@ interface TagEditModalProps {
   onClose: () => void;
 }
 
-export default function TagManagementModal({
-  opened,
-  onClose
-}: TagEditModalProps) {
+export function TagManagementModal({ opened, onClose }: TagEditModalProps) {
   const { data: tags = [] } = useTags();
   const createTag = useCreateTag();
   const updateTag = useUpdateTag();

@@ -25,7 +25,7 @@ interface StatusEditModalProps {
   onClose: () => void;
 }
 
-export default function StatusManagementModal({
+export function StatusManagementModal({
   opened,
   onClose
 }: StatusEditModalProps) {

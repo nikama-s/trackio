@@ -4,7 +4,7 @@ import { useUpdateTask } from "@/hooks/useTask";
 import { useState, useMemo, useCallback } from "react";
 import { notifications } from "@mantine/notifications";
 import { isEqual } from "lodash";
-import TagManagementModal from "./TagManagementModal";
+import { TagManagementModal } from "./TagManagementModal";
 
 interface TagManagementModalProps {
   opened: boolean;
@@ -13,7 +13,7 @@ interface TagManagementModalProps {
   currentTags: { id: string; name: string; color: string | null }[];
 }
 
-export default function TagEditModal({
+export function TagEditModal({
   opened,
   onClose,
   taskId,

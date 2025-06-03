@@ -1,6 +1,6 @@
 import { Card, Group, Stack, Divider, Flex, Skeleton } from "@mantine/core";
 
-export default function TaskSkeleton() {
+export function TaskSkeleton() {
   return (
     <Card
       shadow="sm"

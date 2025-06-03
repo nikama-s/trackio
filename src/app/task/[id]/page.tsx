@@ -1,36 +1,24 @@
 "use client";
 
 import {
-  ActionIcon,
   Card,
-  Group,
   Stack,
   Divider,
   Text,
-  Flex,
   Alert,
-  Popover,
-  Button,
-  Select,
-  Container
+  Container,
+  Button
 } from "@mantine/core";
-import {
-  IconCalendar,
-  IconEdit,
-  IconX,
-  IconChevronDown,
-  IconArrowLeft
-} from "@tabler/icons-react";
+import { IconArrowLeft } from "@tabler/icons-react";
 import dayjs from "dayjs";
-import EditableText from "@/components/EditableText";
 import { useTask, useUpdateTask } from "@/hooks/useTask";
-import Tag from "@/components/Tag";
-import TaskSkeleton from "@/components/TaskSkeleton";
-import TagEditModal from "@/components/TagEditModal";
-import StatusManagementModal from "@/components/StatusManagementModal";
-import { use, useCallback, useMemo } from "react";
-import { useState } from "react";
-import { DatePicker } from "@mantine/dates";
+import {
+  TaskSkeleton,
+  TaskHeader,
+  TaskStatusAndDeadline
+} from "@/components/task";
+import { TagEditModal, StatusManagementModal } from "@/components/modals";
+import { use, useCallback, useMemo, useState } from "react";
 import { useStatuses } from "@/hooks/useStatuses";
 import { AutoResizingTextarea } from "@/components/AutoResizingTextArea";
 import { useRouter } from "next/navigation";
@@ -44,7 +32,6 @@ export default function TaskPage({
   const { data: task, isLoading, error } = useTask(id);
   const [isAddTagModalOpen, setIsAddTagModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
-  const [deadlinePopoverOpen, setDeadlinePopoverOpen] = useState(false);
   const router = useRouter();
   const updateTask = useUpdateTask();
   const { data: statuses } = useStatuses();
@@ -61,14 +48,13 @@ export default function TaskPage({
   }, [task]);
 
   const handleDeadlineChange = useCallback(
-    (dateString: string | null) => {
+    (date: string | null) => {
       updateTask.mutate({
         id: id,
         data: {
-          deadline: dateString
+          deadline: date
         }
       });
-      setDeadlinePopoverOpen(false);
     },
     [id, updateTask]
   );
@@ -109,7 +95,7 @@ export default function TaskPage({
     );
   }
 
-  if (!task) {
+  if (!task || !statuses) {
     return (
       <Card
         shadow="sm"
@@ -137,164 +123,60 @@ export default function TaskPage({
   };
 
   return (
-    <>
-      <Container size="sm" py="xl" style={{ minHeight: "100vh" }}>
-        <Button
-          variant="light"
-          size="sm"
-          mb="md"
-          onClick={() => router.push("/board")}
-          leftSection={<IconArrowLeft size={16} />}
-          style={{ position: "absolute", left: 20, top: 20 }}
-        >
-          Go Back
-        </Button>
+    <Container className="w-full h-full">
+      <Button
+        size="sm"
+        mb="md"
+        onClick={() => router.push("/board")}
+        leftSection={<IconArrowLeft size={16} />}
+        style={{ position: "absolute", left: 20, top: 20, zIndex: 10 }}
+      >
+        Go Back
+      </Button>
 
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-          maw={700}
-          mx="auto"
-          my="xl"
-          style={{ marginTop: "4rem" }}
-        >
-          <Stack>
-            <Group justify="space-between">
-              <EditableText
-                initialValue={task.title}
-                onSubmit={(value) => updateField("title", value)}
-              />
-              <Group gap="xs">
-                {task.tags.map((tag) => (
-                  <Tag {...tag} key={tag.id} />
-                ))}
-                <Flex
-                  align="center"
-                  direction="row"
-                  wrap="nowrap"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => setIsAddTagModalOpen(true)}
-                >
-                  <ActionIcon variant="transparent" size="sm">
-                    <IconEdit color="black" />
-                  </ActionIcon>
-                  <Text size="sm">Edit Tags</Text>
-                </Flex>
-              </Group>
-            </Group>
+      <Card
+        shadow="sm"
+        padding="lg"
+        radius="md"
+        withBorder
+        mt="3rem"
+        maw={700}
+        mx="auto"
+        style={{ margin: 0 }}
+      >
+        <Stack>
+          <TaskHeader
+            title={task.title}
+            tags={task.tags}
+            onTitleChange={(value) => updateField("title", value)}
+            onEditTags={() => setIsAddTagModalOpen(true)}
+          />
 
-            <Text size="sm" c="dimmed">
-              Created: {formattedDates?.createdAt} • Last updated:{" "}
-              {formattedDates?.updatedAt}
-            </Text>
+          <Text size="sm" c="dimmed">
+            Created: {formattedDates?.createdAt} • Last updated:{" "}
+            {formattedDates?.updatedAt}
+          </Text>
 
-            <Divider />
+          <Divider />
 
-            <AutoResizingTextarea
-              initialValue={task.description || ""}
-              onBlurSubmit={(value) => updateField("description", value)}
-              placeholder="Add a detailed description..."
-            />
+          <AutoResizingTextarea
+            initialValue={task.description || ""}
+            onBlurSubmit={(value) => updateField("description", value)}
+            placeholder="Add a detailed description..."
+          />
 
-            <Divider />
+          <Divider />
 
-            <Group justify="space-between">
-              <Group gap={1}>
-                <Text fw={500}>Deadline:</Text>
-                <Popover
-                  opened={deadlinePopoverOpen}
-                  onChange={setDeadlinePopoverOpen}
-                  position="bottom"
-                  withArrow
-                  shadow="md"
-                >
-                  <Popover.Target>
-                    <Button
-                      variant="subtle"
-                      rightSection={<IconCalendar size={16} />}
-                      onClick={() => setDeadlinePopoverOpen((o) => !o)}
-                    >
-                      {task.deadline
-                        ? dayjs(task.deadline).format("DD.MM.YYYY HH:mm")
-                        : "No deadline"}
-                    </Button>
-                  </Popover.Target>
-                  <Popover.Dropdown>
-                    <Stack>
-                      <DatePicker
-                        value={task.deadline ? new Date(task.deadline) : null}
-                        onChange={(date) => handleDeadlineChange(date)}
-                      />
-                      {task.deadline && (
-                        <Button
-                          variant="outline"
-                          color="red"
-                          onClick={() => {
-                            handleDeadlineChange(null);
-                            setDeadlinePopoverOpen(false);
-                          }}
-                          leftSection={<IconX size={16} />}
-                        >
-                          Clear deadline
-                        </Button>
-                      )}
-                    </Stack>
-                  </Popover.Dropdown>
-                </Popover>
-              </Group>
-
-              <Group gap={1}>
-                <Select
-                  placeholder="Select status"
-                  value={task.statusId || null}
-                  onChange={handleStatusChange}
-                  className="w-[150px]"
-                  data={
-                    statuses?.map((status) => ({
-                      value: status.id,
-                      label: status.name,
-                      color: status.color
-                    })) || []
-                  }
-                  rightSection={<IconChevronDown size={16} />}
-                  styles={{
-                    input: {
-                      border: "none",
-                      paddingRight: "2rem",
-                      display: "flex",
-                      alignItems: "center"
-                    }
-                  }}
-                  leftSection={
-                    task.statusId ? (
-                      <div
-                        style={{
-                          width: 10,
-                          height: 10,
-                          borderRadius: "50%",
-                          backgroundColor:
-                            statuses?.find((s) => s.id === task.statusId)
-                              ?.color || "gray"
-                        }}
-                      />
-                    ) : null
-                  }
-                />
-                <Button
-                  variant="default"
-                  size="xs"
-                  onClick={() => setIsStatusModalOpen(true)}
-                >
-                  Manage
-                </Button>
-              </Group>
-            </Group>
-          </Stack>
-        </Card>
-      </Container>
-
+          <TaskStatusAndDeadline
+            deadline={task.deadline}
+            statusId={task.statusId}
+            statuses={statuses}
+            onDeadlineChange={handleDeadlineChange}
+            onStatusChange={handleStatusChange}
+            onManageStatuses={() => setIsStatusModalOpen(true)}
+          />
+        </Stack>
+      </Card>
       <TagEditModal
         opened={isAddTagModalOpen}
         onClose={() => setIsAddTagModalOpen(false)}
@@ -306,6 +188,6 @@ export default function TaskPage({
         opened={isStatusModalOpen}
         onClose={() => setIsStatusModalOpen(false)}
       />
-    </>
+    </Container>
   );
 }
