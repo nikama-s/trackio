@@ -2,7 +2,7 @@ import { Badge } from "@mantine/core";
 
 interface TagProps {
   name: string;
-  color: string;
+  color: string | null;
 }
 
 export default function Tag({ name, color }: TagProps) {
