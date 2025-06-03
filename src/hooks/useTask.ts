@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api/axiosInstance";
+import { notifications } from "@mantine/notifications";
 
 export type Task = {
   id: string;
@@ -24,9 +25,9 @@ export type Task = {
 
 export type UpdateTaskInput = {
   title?: string;
-  description?: string;
+  description?: string | null;
   statusId?: string;
-  deadline?: string;
+  deadline?: string | null;
   tagIds?: string[];
 };
 
@@ -51,6 +52,13 @@ export function useUpdateTask() {
     },
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["task", id] });
+    },
+    onError: () => {
+      notifications.show({
+        title: "Error",
+        message: "Failed to update task",
+        color: "red"
+      });
     }
   });
 }

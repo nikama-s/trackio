@@ -131,12 +131,11 @@ export async function PUT(request: Request, context: any) {
           { status: 400 }
         );
       }
-    }
 
-    // Delete existing task tags
-    await prisma.taskTag.deleteMany({
-      where: { taskId: id }
-    });
+      await prisma.taskTag.deleteMany({
+        where: { taskId: id }
+      });
+    }
 
     const updatedTask = await prisma.task.update({
       where: { id: id },
@@ -144,7 +143,11 @@ export async function PUT(request: Request, context: any) {
         title: title ?? existingTask.title,
         description: description ?? existingTask.description,
         statusId: statusId ?? existingTask.statusId,
-        deadline: deadline ? new Date(deadline) : existingTask.deadline,
+        deadline: body.hasOwnProperty("deadline")
+          ? deadline
+            ? new Date(deadline)
+            : null
+          : existingTask.deadline,
         taskTags: {
           create:
             tagIds?.map((tagId: string) => ({

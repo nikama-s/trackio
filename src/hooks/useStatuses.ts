@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api/axiosInstance";
 import { notifications } from "@mantine/notifications";
 
-export type Tag = {
+export type Status = {
   id: string;
   name: string;
   color: string | null;
@@ -12,38 +12,38 @@ export type Tag = {
   updatedAt: Date;
 };
 
-export function useTags() {
-  return useQuery<Tag[]>({
-    queryKey: ["tags"],
+export function useStatuses() {
+  return useQuery<Status[]>({
+    queryKey: ["statuses"],
     queryFn: async () => {
-      const response = await api.get("/api/tags");
+      const response = await api.get("/api/statuses");
       return response.data;
     },
     retry: false
   });
 }
 
-export function useCreateTag() {
+export function useCreateStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: { name: string; color?: string }) => {
-      const response = await api.post("/api/tags", data);
+      const response = await api.post("/api/statuses", data);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tags"] });
+      queryClient.invalidateQueries({ queryKey: ["statuses"] });
     },
     onError: () => {
       notifications.show({
         title: "Error",
-        message: "Failed to create tag",
+        message: "Failed to create status",
         color: "red"
       });
     }
   });
 }
 
-export function useUpdateTag() {
+export function useUpdateStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
@@ -53,36 +53,36 @@ export function useUpdateTag() {
       id: string;
       data: { name?: string; color?: string };
     }) => {
-      const response = await api.patch(`/api/tags/${id}`, data);
+      const response = await api.put(`/api/statuses/${id}`, data);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tags"] });
+      queryClient.invalidateQueries({ queryKey: ["statuses"] });
     },
     onError: () => {
       notifications.show({
         title: "Error",
-        message: "Failed to update tag",
+        message: "Failed to update status",
         color: "red"
       });
     }
   });
 }
 
-export function useDeleteTag() {
+export function useDeleteStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await api.delete(`/api/tags/${id}`);
+      const response = await api.delete(`/api/statuses/${id}`);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tags"] });
+      queryClient.invalidateQueries({ queryKey: ["statuses"] });
     },
     onError: () => {
       notifications.show({
         title: "Error",
-        message: "Failed to delete tag",
+        message: "Failed to delete status",
         color: "red"
       });
     }

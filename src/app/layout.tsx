@@ -4,6 +4,7 @@ import { MantineProvider } from "@mantine/core";
 import { Providers } from "@/Providers";
 import { Notifications } from "@mantine/notifications";
 import "@mantine/notifications/styles.css";
+import "@mantine/dates/styles.css";
 
 export const metadata = {
   title: "Trackio",
