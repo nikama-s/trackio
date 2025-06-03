@@ -3,13 +3,10 @@ import {
   TextInput,
   ColorInput,
   Button,
-  Group,
   Stack,
-  ActionIcon,
   Text,
   Box
 } from "@mantine/core";
-import { IconTrash } from "@tabler/icons-react";
 import {
   useStatuses,
   useCreateStatus,
@@ -19,6 +16,7 @@ import {
 } from "@/hooks/useStatuses";
 import { useCallback, useState } from "react";
 import { notifications } from "@mantine/notifications";
+import { EditableItemRow } from "./components";
 
 interface StatusEditModalProps {
   opened: boolean;
@@ -157,91 +155,31 @@ export function StatusManagementModal({
                 const editedStatus = editingStatuses[status.id];
 
                 return (
-                  <Group key={status.id} align="center" wrap="nowrap">
-                    {isEditing ? (
-                      <>
-                        <TextInput
-                          value={editedStatus.name}
-                          onChange={(e) =>
-                            setEditingStatuses((prev) => ({
-                              ...prev,
-                              [status.id]: {
-                                ...editedStatus,
-                                name: e.target.value
-                              }
-                            }))
-                          }
-                          disabled={updateStatus.isPending || status.isDefault}
-                          style={{ flex: 1 }}
-                        />
-                        <ColorInput
-                          value={editedStatus.color}
-                          onChange={(value) =>
-                            setEditingStatuses((prev) => ({
-                              ...prev,
-                              [status.id]: { ...editedStatus, color: value }
-                            }))
-                          }
-                          disabled={updateStatus.isPending}
-                          style={{ flex: 1 }}
-                        />
-                        <Group wrap="nowrap">
-                          <Button
-                            size="xs"
-                            onClick={() => handleUpdateStatus(status)}
-                            loading={updateStatus.isPending}
-                            disabled={!hasChanges(status)}
-                          >
-                            Save
-                          </Button>
-                          <Button
-                            size="xs"
-                            variant="default"
-                            onClick={() => cancelEditing(status.id)}
-                            disabled={updateStatus.isPending}
-                          >
-                            Cancel
-                          </Button>
-                        </Group>
-                      </>
-                    ) : (
-                      <>
-                        <Text style={{ flex: 1 }}>{status.name}</Text>
-                        <Group wrap="nowrap" gap="xs">
-                          <Box
-                            style={{
-                              width: 16,
-                              height: 16,
-                              borderRadius: "50%",
-                              backgroundColor: status.color || "#808080",
-                              border: "1px solid #ccc"
-                            }}
-                          />
-                          <Text size="sm" c="dimmed" style={{ width: 100 }}>
-                            {status.color || "No color"}
-                          </Text>
-                          <Group wrap="nowrap">
-                            <Button
-                              size="xs"
-                              onClick={() => startEditing(status)}
-                            >
-                              Edit
-                            </Button>
-                            <ActionIcon
-                              color="red"
-                              onClick={() => handleDeleteStatus(status)}
-                              disabled={
-                                status.isDefault || deleteStatus.isPending
-                              }
-                              loading={deleteStatus.isPending}
-                            >
-                              <IconTrash size={16} />
-                            </ActionIcon>
-                          </Group>
-                        </Group>
-                      </>
-                    )}
-                  </Group>
+                  <EditableItemRow
+                    key={status.id}
+                    item={status}
+                    editingState={editedStatus}
+                    isEditing={isEditing}
+                    onEditStart={() => startEditing(status)}
+                    onEditCancel={() => cancelEditing(status.id)}
+                    onEditSave={() => handleUpdateStatus(status)}
+                    onDelete={() => handleDeleteStatus(status)}
+                    isUpdating={updateStatus.isPending}
+                    isDeleting={deleteStatus.isPending}
+                    hasChanges={hasChanges(status)}
+                    onNameChange={(name) =>
+                      setEditingStatuses((prev) => ({
+                        ...prev,
+                        [status.id]: { ...editedStatus, name }
+                      }))
+                    }
+                    onColorChange={(color) =>
+                      setEditingStatuses((prev) => ({
+                        ...prev,
+                        [status.id]: { ...editedStatus, color }
+                      }))
+                    }
+                  />
                 );
               })}
             </Stack>

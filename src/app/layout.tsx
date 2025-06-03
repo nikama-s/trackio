@@ -17,8 +17,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-mantine-color-scheme="light" className="w-full h-full">
-      <body className="w-full h-full">
+    <html lang="en" data-mantine-color-scheme="light">
+      <body>
         <Providers>
           <MantineProvider
             theme={{

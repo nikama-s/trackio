@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  Card,
-  Stack,
-  Divider,
-  Text,
-  Alert,
-  Container,
-  Button
-} from "@mantine/core";
-import { IconArrowLeft } from "@tabler/icons-react";
+import { Card, Stack, Divider, Text, Alert, Container } from "@mantine/core";
 import dayjs from "dayjs";
 import { useTask, useUpdateTask } from "@/hooks/useTask";
 import {
@@ -21,7 +12,6 @@ import { TagEditModal, StatusManagementModal } from "@/components/modals";
 import { use, useCallback, useMemo, useState } from "react";
 import { useStatuses } from "@/hooks/useStatuses";
 import { AutoResizingTextarea } from "@/components/AutoResizingTextArea";
-import { useRouter } from "next/navigation";
 
 export default function TaskPage({
   params
@@ -32,7 +22,6 @@ export default function TaskPage({
   const { data: task, isLoading, error } = useTask(id);
   const [isAddTagModalOpen, setIsAddTagModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
-  const router = useRouter();
   const updateTask = useUpdateTask();
   const { data: statuses } = useStatuses();
 
@@ -123,17 +112,7 @@ export default function TaskPage({
   };
 
   return (
-    <Container className="w-full h-full">
-      <Button
-        size="sm"
-        mb="md"
-        onClick={() => router.push("/board")}
-        leftSection={<IconArrowLeft size={16} />}
-        style={{ position: "absolute", left: 20, top: 20, zIndex: 10 }}
-      >
-        Go Back
-      </Button>
-
+    <Container>
       <Card
         shadow="sm"
         padding="lg"
@@ -142,7 +121,6 @@ export default function TaskPage({
         mt="3rem"
         maw={700}
         mx="auto"
-        style={{ margin: 0 }}
       >
         <Stack>
           <TaskHeader

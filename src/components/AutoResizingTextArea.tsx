@@ -33,7 +33,7 @@ export function AutoResizingTextarea({
       onBlur={handleBlur}
       autosize
       minRows={3}
-      maxRows={10}
+      maxRows={20}
       {...props}
     />
   );

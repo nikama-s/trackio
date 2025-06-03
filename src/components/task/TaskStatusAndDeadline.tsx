@@ -28,9 +28,7 @@ export function TaskStatusAndDeadline({
         <Popover position="bottom" withArrow shadow="md">
           <Popover.Target>
             <Button variant="subtle" rightSection={<IconCalendar size={16} />}>
-              {deadline
-                ? dayjs(deadline).format("DD.MM.YYYY HH:mm")
-                : "No deadline"}
+              {deadline ? dayjs(deadline).format("DD.MM.YYYY") : "No deadline"}
             </Button>
           </Popover.Target>
           <Popover.Dropdown>
@@ -88,7 +86,7 @@ export function TaskStatusAndDeadline({
             ) : null
           }
         />
-        <Button variant="default" size="xs" onClick={onManageStatuses}>
+        <Button variant="default" size="sm" onClick={onManageStatuses}>
           Manage
         </Button>
       </Group>

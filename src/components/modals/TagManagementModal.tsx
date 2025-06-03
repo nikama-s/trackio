@@ -3,13 +3,10 @@ import {
   TextInput,
   ColorInput,
   Button,
-  Group,
   Stack,
-  ActionIcon,
   Text,
   Box
 } from "@mantine/core";
-import { IconTrash } from "@tabler/icons-react";
 import {
   useTags,
   useCreateTag,
@@ -19,6 +16,7 @@ import {
 } from "@/hooks/useTags";
 import { useCallback, useState } from "react";
 import { notifications } from "@mantine/notifications";
+import { EditableItemRow } from "./components";
 
 interface TagEditModalProps {
   opened: boolean;
@@ -152,83 +150,31 @@ export function TagManagementModal({ opened, onClose }: TagEditModalProps) {
                 const editedTag = editingTags[tag.id];
 
                 return (
-                  <Group key={tag.id} align="center" wrap="nowrap">
-                    {isEditing ? (
-                      <>
-                        <TextInput
-                          value={editedTag.name}
-                          onChange={(e) =>
-                            setEditingTags((prev) => ({
-                              ...prev,
-                              [tag.id]: { ...editedTag, name: e.target.value }
-                            }))
-                          }
-                          disabled={updateTag.isPending || tag.isDefault}
-                          style={{ flex: 1 }}
-                        />
-                        <ColorInput
-                          value={editedTag.color}
-                          onChange={(value) =>
-                            setEditingTags((prev) => ({
-                              ...prev,
-                              [tag.id]: { ...editedTag, color: value }
-                            }))
-                          }
-                          disabled={updateTag.isPending}
-                          style={{ flex: 1 }}
-                        />
-                        <Group wrap="nowrap">
-                          <Button
-                            size="xs"
-                            onClick={() => handleUpdateTag(tag)}
-                            loading={updateTag.isPending}
-                            disabled={!hasChanges(tag)}
-                          >
-                            Save
-                          </Button>
-                          <Button
-                            size="xs"
-                            variant="default"
-                            onClick={() => cancelEditing(tag.id)}
-                            disabled={updateTag.isPending}
-                          >
-                            Cancel
-                          </Button>
-                        </Group>
-                      </>
-                    ) : (
-                      <>
-                        <Text style={{ flex: 1 }}>{tag.name}</Text>
-                        <Group wrap="nowrap" gap="xs">
-                          <Box
-                            style={{
-                              width: 16,
-                              height: 16,
-                              borderRadius: "50%",
-                              backgroundColor: tag.color || "#808080",
-                              border: "1px solid #ccc"
-                            }}
-                          />
-                          <Text size="sm" c="dimmed" style={{ width: 100 }}>
-                            {tag.color || "No color"}
-                          </Text>
-                          <Group wrap="nowrap">
-                            <Button size="xs" onClick={() => startEditing(tag)}>
-                              Edit
-                            </Button>
-                            <ActionIcon
-                              color="red"
-                              onClick={() => handleDeleteTag(tag)}
-                              disabled={tag.isDefault || deleteTag.isPending}
-                              loading={deleteTag.isPending}
-                            >
-                              <IconTrash size={16} />
-                            </ActionIcon>
-                          </Group>
-                        </Group>
-                      </>
-                    )}
-                  </Group>
+                  <EditableItemRow
+                    key={tag.id}
+                    item={tag}
+                    editingState={editedTag}
+                    isEditing={isEditing}
+                    onEditStart={() => startEditing(tag)}
+                    onEditCancel={() => cancelEditing(tag.id)}
+                    onEditSave={() => handleUpdateTag(tag)}
+                    onDelete={() => handleDeleteTag(tag)}
+                    isUpdating={updateTag.isPending}
+                    isDeleting={deleteTag.isPending}
+                    hasChanges={hasChanges(tag)}
+                    onNameChange={(name) =>
+                      setEditingTags((prev) => ({
+                        ...prev,
+                        [tag.id]: { ...editedTag, name }
+                      }))
+                    }
+                    onColorChange={(color) =>
+                      setEditingTags((prev) => ({
+                        ...prev,
+                        [tag.id]: { ...editedTag, color }
+                      }))
+                    }
+                  />
                 );
               })}
             </Stack>
