@@ -70,7 +70,7 @@ export default function TaskPage() {
           />
           <Group gap="xs">
             {task.tags.map((tag) => (
-              <Tag {...tag} key={tag.id} />
+              <Tag name={tag.name} color={tag.color} key={tag.id} />
             ))}
             <Flex align="center" direction="row" wrap="nowrap">
               <ActionIcon variant="transparent" size="sm">
