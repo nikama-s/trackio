@@ -7,6 +7,7 @@ import { verifyAccessToken } from "@/lib/auth/tokens";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function GET(request: Request, context: any) {
   const { params } = context;
+  const { id } = await params;
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
@@ -24,7 +25,7 @@ export async function GET(request: Request, context: any) {
 
     const tag = await prisma.tag.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: payload.userId
       }
     });
@@ -44,6 +45,7 @@ export async function GET(request: Request, context: any) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function PATCH(request: Request, context: any) {
   const { params } = context;
+  const { id } = await params;
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
@@ -61,7 +63,7 @@ export async function PATCH(request: Request, context: any) {
 
     const tag = await prisma.tag.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: payload.userId
       }
     });
@@ -86,7 +88,7 @@ export async function PATCH(request: Request, context: any) {
         where: {
           userId: payload.userId,
           name,
-          id: { not: params.id }
+          id: { not: id }
         }
       });
 
@@ -99,7 +101,7 @@ export async function PATCH(request: Request, context: any) {
     }
 
     const updatedTag = await prisma.tag.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         name,
         color
@@ -120,6 +122,7 @@ export async function PATCH(request: Request, context: any) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function DELETE(request: Request, context: any) {
   const { params } = context;
+  const { id } = await params;
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
@@ -137,7 +140,7 @@ export async function DELETE(request: Request, context: any) {
 
     const tag = await prisma.tag.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: payload.userId
       }
     });
@@ -155,12 +158,12 @@ export async function DELETE(request: Request, context: any) {
 
     // Delete all TaskTag relations first
     await prisma.taskTag.deleteMany({
-      where: { tagId: params.id }
+      where: { tagId: id }
     });
 
     // Then delete the tag
     await prisma.tag.delete({
-      where: { id: params.id }
+      where: { id: id }
     });
 
     return NextResponse.json(

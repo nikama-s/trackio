@@ -7,6 +7,7 @@ import { verifyAccessToken } from "@/lib/auth/tokens";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function PUT(request: Request, context: any) {
   const { params } = context;
+  const { id } = await params;
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
@@ -26,7 +27,7 @@ export async function PUT(request: Request, context: any) {
     const { name, color } = body;
 
     const existingStatus = await prisma.status.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     });
 
     if (!existingStatus) {
@@ -50,7 +51,7 @@ export async function PUT(request: Request, context: any) {
         where: {
           userId: payload.userId,
           name,
-          id: { not: params.id }
+          id: { not: id }
         }
       });
 
@@ -63,7 +64,7 @@ export async function PUT(request: Request, context: any) {
     }
 
     const updatedStatus = await prisma.status.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         name: name ?? existingStatus.name,
         color: color ?? existingStatus.color
@@ -84,6 +85,7 @@ export async function PUT(request: Request, context: any) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function DELETE(request: Request, context: any) {
   const { params } = context;
+  const { id } = await params;
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
@@ -100,7 +102,7 @@ export async function DELETE(request: Request, context: any) {
     }
 
     const existingStatus = await prisma.status.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     });
 
     if (!existingStatus) {
@@ -120,7 +122,7 @@ export async function DELETE(request: Request, context: any) {
 
     // Check if there are any tasks using this status
     const tasksWithStatus = await prisma.task.findFirst({
-      where: { statusId: params.id }
+      where: { statusId: id }
     });
 
     if (tasksWithStatus) {
@@ -141,7 +143,7 @@ export async function DELETE(request: Request, context: any) {
 
       // Update all tasks using this status to use "To Do" status instead
       await prisma.task.updateMany({
-        where: { statusId: params.id },
+        where: { statusId: id },
         data: { statusId: toDoStatus.id }
       });
     }
