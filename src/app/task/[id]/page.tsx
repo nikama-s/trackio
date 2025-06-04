@@ -6,7 +6,7 @@ import { useTask, useUpdateTask } from "@/hooks/useTask";
 import {
   TaskSkeleton,
   TaskHeader,
-  TaskStatusAndDeadline
+  TaskStatusAndDeadline,
 } from "@/components/task";
 import { TagEditModal, StatusManagementModal } from "@/components/modals";
 import { use, useCallback, useMemo, useState } from "react";
@@ -14,7 +14,7 @@ import { useStatuses } from "@/hooks/useStatuses";
 import { AutoResizingTextarea } from "@/components/AutoResizingTextArea";
 
 export default function TaskPage({
-  params
+  params,
 }: {
   params: Promise<{ id: string }>;
 }) {
@@ -32,7 +32,7 @@ export default function TaskPage({
       updatedAt: dayjs(task.updatedAt).format("DD.MM.YYYY HH:mm"),
       deadline: task.deadline
         ? dayjs(task.deadline).format("DD.MM.YYYY HH:mm")
-        : null
+        : null,
     };
   }, [task]);
 
@@ -41,8 +41,8 @@ export default function TaskPage({
       updateTask.mutate({
         id: id,
         data: {
-          deadline: date
-        }
+          deadline: date,
+        },
       });
     },
     [id, updateTask]
@@ -54,8 +54,8 @@ export default function TaskPage({
         updateTask.mutate({
           id: id,
           data: {
-            statusId: statusId
-          }
+            statusId: statusId,
+          },
         });
       }
     },
@@ -106,8 +106,8 @@ export default function TaskPage({
     updateTask.mutate({
       id: id,
       data: {
-        [field]: value
-      }
+        [field]: value,
+      },
     });
   };
 
@@ -168,6 +168,4 @@ export default function TaskPage({
       />
     </Container>
   );
-
 }
-

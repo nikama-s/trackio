@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 
-import { TaskProps } from "@/app/board/page";
+import { TaskProps } from "@/app/page";
 import Tag from "./Tag";
 import { Box, Flex, Text } from "@mantine/core";
 import { useDraggable } from "@dnd-kit/core";
@@ -15,12 +15,6 @@ export default function SingleTask(task: TaskProps) {
         type: "task",
       },
     });
-
-  function handleTaskChoose() {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("chosenProduct", JSON.stringify(task));
-    }
-  }
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -53,11 +47,7 @@ export default function SingleTask(task: TaskProps) {
         >
           ☰
         </Box>
-        <Link
-          href="/task"
-          onClick={handleTaskChoose}
-          style={{ textDecoration: "none" }}
-        >
+        <Link href={`/task/${task.id}`} style={{ textDecoration: "none" }}>
           <Flex
             gap="xs"
             justify="flex-start"

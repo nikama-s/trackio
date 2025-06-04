@@ -42,7 +42,7 @@ export function useLogin() {
     onSuccess: (data) => {
       if (data?.user) {
         setUser(data.user);
-        router.push("/board");
+        router.push("/");
       }
     },
   });
@@ -74,7 +74,7 @@ export function useRegister() {
     onSuccess: (data) => {
       if (data?.user) {
         setUser(data.user);
-        router.push("/board");
+        router.push("/");
       }
     },
   });

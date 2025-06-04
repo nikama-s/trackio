@@ -1,6 +1,6 @@
 "use client";
 
-import { GroupProps, TagProps } from "@/app/board/page";
+import { GroupProps, TagProps } from "@/app/page";
 import SingleTask from "./SingleTask";
 import {
   ActionIcon,
@@ -15,32 +15,34 @@ import {
   Select,
   MultiSelect,
   Loader,
+  Group,
 } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useDroppable } from "@dnd-kit/core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useDisclosure } from "@mantine/hooks";
+import { TagManagementModal, StatusManagementModal } from "@/components/modals";
 
 export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
   const { isOver, setNodeRef } = useDroppable({ id });
   const queryClient = useQueryClient();
   const [opened, { open, close }] = useDisclosure(false);
 
-  // Стейти
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(id); // Поточна група за замовчуванням
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(id);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
 
-  // Запити для статусів (груп) і тегів
   const { data: statuses, isLoading: loadingStatuses } = useQuery({
     queryKey: ["statuses"],
     queryFn: async () => {
       const res = await fetch("/api/statuses");
       if (!res.ok) throw new Error("Failed to fetch statuses");
-      return res.json(); // очікується масив: [{ id, name }]
+      return res.json();
     },
   });
 
@@ -49,11 +51,10 @@ export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
     queryFn: async () => {
       const res = await fetch("/api/tags");
       if (!res.ok) throw new Error("Failed to fetch tags");
-      return res.json(); // очікується масив: [{ id, name }]
+      return res.json();
     },
   });
 
-  // Мутація
   const { mutate: addTask, isPending } = useMutation({
     mutationFn: async () => {
       const res = await fetch("/api/tasks", {
@@ -76,7 +77,7 @@ export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
       setDescription("");
       setDeadline("");
       setSelectedTags([]);
-      setSelectedStatus(id); // Повернути групу за замовчуванням
+      setSelectedStatus(id);
       close();
     },
   });
@@ -125,36 +126,48 @@ export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
           {loadingStatuses ? (
             <Loader size="sm" />
           ) : (
-            <Select
-              label="Group (Status)"
-              data={
-                statuses?.map((status: GroupProps) => ({
-                  value: status.id,
-                  label: status.name,
-                })) || []
-              }
-              value={selectedStatus}
-              onChange={setSelectedStatus}
-              placeholder="Select group"
-            />
+            <Group gap={1}>
+              <Select
+                data={
+                  statuses?.map((status: GroupProps) => ({
+                    value: status.id,
+                    label: status.name,
+                  })) || []
+                }
+                value={selectedStatus}
+                onChange={setSelectedStatus}
+                placeholder="Select group"
+              />
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setIsStatusModalOpen(true)}
+              >
+                Manage
+              </Button>
+            </Group>
           )}
 
           {loadingTags ? (
             <Loader size="sm" />
           ) : (
-            <MultiSelect
-              label="Tags"
-              data={
-                tags?.map((tag: TagProps) => ({
-                  value: tag.id,
-                  label: tag.name,
-                })) || []
-              }
-              value={selectedTags}
-              onChange={setSelectedTags}
-              placeholder="Select tags"
-              searchable
-            />
+            <Group gap={1}>
+              <MultiSelect
+                data={
+                  tags?.map((tag: TagProps) => ({
+                    value: tag.id,
+                    label: tag.name,
+                  })) || []
+                }
+                value={selectedTags}
+                onChange={setSelectedTags}
+                placeholder="Select tags"
+                searchable
+              />
+              <Button variant="default" onClick={() => setIsTagModalOpen(true)}>
+                Manage
+              </Button>
+            </Group>
           )}
 
           <Button onClick={handleAddTask} loading={isPending} mt="md">
@@ -162,6 +175,15 @@ export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
           </Button>
         </Flex>
       </Drawer>
+      <TagManagementModal
+        opened={isTagModalOpen}
+        onClose={() => setIsTagModalOpen(false)}
+      />
+
+      <StatusManagementModal
+        opened={isStatusModalOpen}
+        onClose={() => setIsStatusModalOpen(false)}
+      />
 
       <Flex gap="md" justify="space-between">
         <Title order={2} mb="xl">

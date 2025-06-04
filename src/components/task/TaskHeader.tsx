@@ -15,7 +15,7 @@ export function TaskHeader({
   title,
   tags,
   onTitleChange,
-  onEditTags
+  onEditTags,
 }: TaskHeaderProps) {
   const router = useRouter();
   return (
@@ -25,7 +25,7 @@ export function TaskHeader({
           <ActionIcon
             variant="outline"
             size="md"
-            onClick={() => router.push("/board")}
+            onClick={() => router.push("/")}
           >
             <IconArrowLeft size={24} />
           </ActionIcon>
