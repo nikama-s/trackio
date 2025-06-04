@@ -1,6 +1,6 @@
 "use client";
 
-import { GroupProps, TagProps } from "@/app/page";
+import { GroupProps, TagProps } from "@/app/(protected)/page";
 import SingleTask from "./SingleTask";
 import {
   ActionIcon,
@@ -15,7 +15,7 @@ import {
   Select,
   MultiSelect,
   Loader,
-  Group,
+  Group
 } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useDroppable } from "@dnd-kit/core";
@@ -43,7 +43,7 @@ export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
       const res = await fetch("/api/statuses");
       if (!res.ok) throw new Error("Failed to fetch statuses");
       return res.json();
-    },
+    }
   });
 
   const { data: tags, isLoading: loadingTags } = useQuery({
@@ -52,7 +52,7 @@ export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
       const res = await fetch("/api/tags");
       if (!res.ok) throw new Error("Failed to fetch tags");
       return res.json();
-    },
+    }
   });
 
   const { mutate: addTask, isPending } = useMutation({
@@ -65,8 +65,8 @@ export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
           statusId: selectedStatus,
           description,
           deadline,
-          tagIds: selectedTags,
-        }),
+          tagIds: selectedTags
+        })
       });
       if (!res.ok) throw new Error("Failed to add task");
       return res.json();
@@ -79,7 +79,7 @@ export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
       setSelectedTags([]);
       setSelectedStatus(id);
       close();
-    },
+    }
   });
 
   const handleAddTask = () => {
@@ -88,7 +88,7 @@ export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
   };
 
   const style = {
-    backgroundColor: isOver ? "lightgreen" : "lightblue",
+    backgroundColor: isOver ? "lightgreen" : "lightblue"
   };
 
   return (
@@ -99,7 +99,7 @@ export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
         padding: "2rem",
         borderRadius: "10px",
         boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-        ...style,
+        ...style
       }}
     >
       <Drawer opened={opened} onClose={close} title="New task" size="md">
@@ -131,7 +131,7 @@ export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
                 data={
                   statuses?.map((status: GroupProps) => ({
                     value: status.id,
-                    label: status.name,
+                    label: status.name
                   })) || []
                 }
                 value={selectedStatus}
@@ -156,7 +156,7 @@ export default function GroupOfTasks({ name, tasks, id }: GroupProps) {
                 data={
                   tags?.map((tag: TagProps) => ({
                     value: tag.id,
-                    label: tag.name,
+                    label: tag.name
                   })) || []
                 }
                 value={selectedTags}

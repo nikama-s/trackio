@@ -44,7 +44,7 @@ export function useLogin() {
         setUser(data.user);
         router.push("/");
       }
-    },
+    }
   });
 }
 
@@ -76,6 +76,24 @@ export function useRegister() {
         setUser(data.user);
         router.push("/");
       }
+    }
+  });
+}
+
+export function useLogout() {
+  const clearUser = useAuthStore((s) => s.clearUser);
+  const router = useRouter();
+
+  return useMutation<void, ErrorResponse>({
+    mutationFn: async () => {
+      await api.post("/api/auth/logout");
     },
+    onSuccess: () => {
+      clearUser();
+      router.push("/auth/login");
+    },
+    onError: (err) => {
+      console.error(err);
+    }
   });
 }
