@@ -1,4 +1,4 @@
-"use client";Add commentMore actions
+"use client";
 
 import { Card, Stack, Divider, Text, Alert, Container } from "@mantine/core";
 import dayjs from "dayjs";
@@ -168,4 +168,6 @@ export default function TaskPage({
       />
     </Container>
   );
+
 }
+

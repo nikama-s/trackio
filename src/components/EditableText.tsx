@@ -6,9 +6,11 @@ import { Text, TextInput } from "@mantine/core";
 export default function EditableText({
   initialValue,
   onSubmit,
+  size
 }: {
   initialValue: string;
   onSubmit: (value: string) => void;
+  size?: string;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(initialValue);
@@ -31,13 +33,19 @@ export default function EditableText({
     <TextInput
       ref={inputRef}
       value={value}
+      size={size}
       onChange={(event) => setValue(event.currentTarget.value)}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       autoFocus
+      className="w-[200px]"
     />
   ) : (
-    <Text onClick={() => setIsEditing(true)} style={{ cursor: "pointer" }}>
+    <Text
+      size={size}
+      onClick={() => setIsEditing(true)}
+      style={{ cursor: "pointer" }}
+    >
       {value || "—"}
     </Text>
   );
