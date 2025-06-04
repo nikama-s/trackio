@@ -14,12 +14,13 @@ import {
 import { IconPlus } from "@tabler/icons-react";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
-  useMutation,
   useQuery,
   useQueryClient,
   UseQueryOptions,
 } from "@tanstack/react-query";
-
+import { useCreateStatus } from "@/hooks/useStatuses";
+import { useUpdateTask } from "@/hooks/useTask";
+import api from "@/lib/api/axiosInstance";
 export interface TagProps {
   id: string;
   name: string;
@@ -63,9 +64,8 @@ export default function Board() {
   } = useQuery<GroupProps[], Error>({
     queryKey: ["groups"],
     queryFn: async () => {
-      const res = await fetch("/api/tasks");
-      if (!res.ok) throw new Error("Failed to fetch groups");
-      return res.json();
+      const res = await api.get("/api/tasks");
+      return res.data;
     },
   } as UseQueryOptions<GroupProps[], Error>);
 
@@ -81,59 +81,27 @@ export default function Board() {
     }
   }, [groups]);
 
-  const addGroup = useMutation({
-    mutationFn: async (name: string) => {
-      const res = await fetch("/api/statuses", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
-      });
-      if (!res.ok) throw new Error("Failed to create group");
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["groups"] });
-    },
-  });
+  const addGroup = useCreateStatus();
 
-  const updateTaskGroup = useMutation({
-    mutationFn: async ({
-      taskId,
-      newGroupId,
-    }: {
-      taskId: string;
-      newGroupId: string;
-    }) => {
-      const updatedData = { statusId: newGroupId };
-      console.log("mamaam");
-      const res = await fetch(`/api/tasks/${taskId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData),
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Failed to move task: ${errorText}`);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["groups"] });
-    },
-  });
+  const { mutate: updateTaskGroup } = useUpdateTask();
 
   const handleAddGroup = () => {
     if (!newGroupName.trim()) return;
     setShownGroups((prev) => [...prev, newGroupName.trim()]);
-    addGroup.mutate(newGroupName.trim(), {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["groups"] });
-      },
-      onError: () => {
-        setShownGroups((prev) =>
-          prev.filter((name) => name !== newGroupName.trim())
-        );
-      },
-    });
+    addGroup.mutate(
+      { name: newGroupName.trim() },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["groups"] });
+        },
+        onError: () => {
+          setShownGroups((prev) =>
+            prev.filter((name) => name !== newGroupName.trim())
+          );
+        },
+      }
+    );
+
     setNewGroupName("");
   };
   const handleDragEnd = (event: DragEndEvent) => {
@@ -148,7 +116,10 @@ export default function Board() {
     const taskId = activeId;
     const newGroupId = overId;
 
-    updateTaskGroup.mutate({ taskId, newGroupId });
+    updateTaskGroup({
+      id: taskId,
+      data: { statusId: newGroupId },
+    });
   };
 
   if (isLoading) return <Center>Loading...</Center>;

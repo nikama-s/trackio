@@ -38,7 +38,7 @@ export function useTask(id: string) {
       const response = await api.get(`/api/tasks/${id}`);
       return response.data;
     },
-    retry: false
+    retry: false,
   });
 }
 
@@ -52,13 +52,14 @@ export function useUpdateTask() {
     },
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["task", id] });
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
     },
     onError: () => {
       notifications.show({
         title: "Error",
         message: "Failed to update task",
-        color: "red"
+        color: "red",
       });
-    }
+    },
   });
 }
