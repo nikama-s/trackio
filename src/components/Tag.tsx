@@ -6,5 +6,5 @@ interface TagProps {
 }
 
 export default function Tag({ name, color }: TagProps) {
-  return <Badge color={color ?? "white"}>{name}</Badge>;
+  return <Badge color={color || "gray"}>{name}</Badge>;
 }
