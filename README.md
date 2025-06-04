@@ -3,6 +3,7 @@
 Trackio is a powerful, intuitive, and lightweight **project and task management** tool, inspired by [Trello](https://trello.com). It allows individuals to organize and track their workflows visually using board with tasks.
 
 Deployment: https://trackio-theta.vercel.app/
+Design Document: https://github.com/nikama-s/trackio/blob/main/design-document.docx
 
 ---
 
