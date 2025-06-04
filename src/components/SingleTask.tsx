@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 
-import { TaskProps } from "@/app/page";
+import { TaskProps } from "@/app/(protected)/page";
 import Tag from "./Tag";
 import { Box, Flex, Text } from "@mantine/core";
 import { useDraggable } from "@dnd-kit/core";
@@ -12,13 +12,13 @@ export default function SingleTask(task: TaskProps) {
     useDraggable({
       id: task.id || "default-id",
       data: {
-        type: "task",
-      },
+        type: "task"
+      }
     });
 
   const style = {
     transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.5 : 1
   };
 
   return (
@@ -31,7 +31,7 @@ export default function SingleTask(task: TaskProps) {
           paddingTop: "1rem",
           borderRadius: "18px",
           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          position: "relative",
+          position: "relative"
         }}
       >
         <Box
@@ -42,7 +42,7 @@ export default function SingleTask(task: TaskProps) {
             top: 10,
             right: 10,
             cursor: "grab",
-            padding: "5px",
+            padding: "5px"
           }}
         >
           ☰
