@@ -44,7 +44,7 @@ export function useLogin() {
         setUser(data.user);
         router.push("/");
       }
-    }
+    },
   });
 }
 
@@ -76,6 +76,6 @@ export function useRegister() {
         setUser(data.user);
         router.push("/");
       }
-    }
+    },
   });
 }
