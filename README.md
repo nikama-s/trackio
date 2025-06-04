@@ -4,7 +4,7 @@ Trackio is a powerful, intuitive, and lightweight **project and task management*
 
 Deployment: https://trackio-theta.vercel.app/
 
-Design Document: https://github.com/nikama-s/trackio/blob/main/design-document.docx
+Design Document: https://docs.google.com/document/d/1DU79pveX6EPwm59ODNDeZsRdzXfUXlQA/edit?usp=sharing&ouid=110655829841137082412&rtpof=true&sd=true
 
 ---
 
